@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#0a0a14"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>مراقب النوم</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #080810;
+    --surface: #0f0f1e;
+    --card: #141428;
+    --border: #1e1e3a;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --accent3: #43e0a0;
+    --text: #e8e8f4;
+    --muted: #6b6b8a;
+    --asleep: #3b82f6;
+    --awake: #43e0a0;
+    --activity: #f59e0b;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* Background ambient effect */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(108,99,255,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(67,224,160,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 80px 0;
+  }
+
+  /* Header */
+  header {
+    padding: 20px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), #a855f7);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+
+  .header-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent3);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  /* Nav Tabs */
+  .nav {
+    display: flex;
+    padding: 12px 20px 0;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-btn {
+    flex: 1;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .nav-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Pages */
+  .page { display: none; padding: 20px; }
+  .page.active { display: block; }
+
+  /* Status Card */
+  .status-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .status-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+  }
+
+  .big-clock {
+    font-size: 52px;
+    font-weight: 700;
+    letter-spacing: -2px;
+    margin: 8px 0 4px;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .date-label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .current-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .current-state.awake {
+    background: rgba(67,224,160,0.1);
+    color: var(--awake);
+    border: 1px solid rgba(67,224,160,0.2);
+  }
+
+  .current-state.asleep {
+    background: rgba(59,130,246,0.1);
+    color: var(--asleep);
+    border: 1px solid rgba(59,130,246,0.2);
+  }
+
+  /* Settings card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title span { font-size: 16px; }
+
+  /* Time slots */
+  .time-slots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .time-slot {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .time-slot:hover { border-color: var(--accent); }
+  .time-slot.active { border-color: var(--accent); background: rgba(108,99,255,0.08); }
+
+  .time-slot-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .time-slot-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  input[type="time"] {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 22px;
+    font-weight: 700;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+    direction: ltr;
+  }
+
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+  }
+
+  /* Toggle row */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .toggle-row:last-child { border-bottom: none; }
+
+  .toggle-info { flex: 1; }
+  .toggle-label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .toggle-desc {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .toggle {
+    width: 44px;
+    height: 24px;
+    background: var(--border);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    border: none;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .toggle.on { background: var(--accent); }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    right: 3px;
+    transition: right 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+
+  .toggle.on::after { right: 23px; }
+
+  /* Primary Button */
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent), #a855f7);
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
+  }
+
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Check-in Modal */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .overlay.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px 24px 0 0;
+    padding: 32px 24px 40px;
+    width: 100%;
+    max-width: 480px;
+    transform: translateY(20px);
+    transition: transform 0.3s;
+  }
+
+  .overlay.show .modal { transform: translateY(0); }
+
+  .modal-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 24px;
+  }
+
+  .modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .modal-sub {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .check-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .check-btn {
+    padding: 20px 12px;
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .check-btn:hover { transform: translateY(-2px); }
+
+  .check-btn.sleep {
+    border-color: rgba(59,130,246,0.4);
+  }
+  .check-btn.sleep:hover, .check-btn.sleep.selected {
+    background: rgba(59,130,246,0.12);
+    border-color: var(--asleep);
+  }
+
+  .check-btn.awake-btn {
+    border-color: rgba(67,224,160,0.4);
+  }
+  .check-btn.awake-btn:hover, .check-btn.awake-btn.selected {
+    background: rgba(67,224,160,0.12);
+    border-color: var(--awake);
+  }
+
+  .check-btn-icon { font-size: 32px; margin-bottom: 8px; }
+  .check-btn-label { font-size: 14px; font-weight: 600; }
+  .check-btn-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* Activity input */
+  .activity-section {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .activity-section.show { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .activity-label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .activity-textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    resize: none;
+    height: 80px;
+    transition: border-color 0.2s;
+    outline: none;
+    margin-bottom: 14px;
+  }
+
+  .activity-textarea:focus { border-color: var(--accent); }
+  .activity-textarea::placeholder { color: var(--muted); }
+
+  /* Quick tags */
+  .quick-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .tag {
+    padding: 6px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--muted);
+  }
+
+  .tag:hover, .tag.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(108,99,255,0.08);
+  }
+
+  /* Log page */
+  .log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .log-title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .clear-btn {
+    font-size: 12px;
+    color: var(--accent2);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,101,132,0.2);
+  }
+
+  .log-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .log-empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+  .log-empty-text { font-size: 14px; }
+
+  .log-entry {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .entry-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .entry-icon.sleep { background: rgba(59,130,246,0.15); }
+  .entry-icon.awake { background: rgba(67,224,160,0.15); }
+  .entry-icon.activity { background: rgba(245,158,11,0.15); }
+
+  .entry-content { flex: 1; }
+
+  .entry-type {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .entry-type.sleep { color: var(--asleep); }
+  .entry-type.awake { color: var(--awake); }
+  .entry-type.activity { color: var(--activity); }
+
+  .entry-text {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .entry-time {
+    font-size: 11px;
+    color: var(--muted);
+    direction: ltr;
+    text-align: right;
+  }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Notification permission banner */
+  .notif-banner {
+    background: rgba(108,99,255,0.1);
+    border: 1px solid rgba(108,99,255,0.3);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    cursor: pointer;
+  }
+
+  .notif-banner-icon { font-size: 24px; }
+  .notif-banner-text { flex: 1; font-size: 13px; line-height: 1.5; }
+  .notif-banner-action { font-size: 12px; color: var(--accent); font-weight: 600; }
+
+  /* Timer indicator */
+  .timer-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 16px 0 0;
+    overflow: hidden;
+    display: none;
+  }
+
+  .timer-bar.active { display: block; }
+
+  .timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 2px;
+    transition: width 1s linear;
+  }
+
+  .timer-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 8px;
+    display: none;
+  }
+
+  .timer-label.active { display: block; }
+
+  /* Bottom safe area */
+  .safe-bottom { height: env(safe-area-inset-bottom, 0px); }
+
+  /* Countdown display in modal */
+  .countdown-chip {
+    display: inline-block;
+    background: rgba(255,101,132,0.1);
+    border: 1px solid rgba(255,101,132,0.3);
+    color: var(--accent2);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* Export area */
+  .export-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--muted);
+    max-height: 160px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    direction: ltr;
+    text-align: left;
+    margin-bottom: 10px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🌙</div>
+      <div>
+        <div class="logo-text">مراقب النوم</div>
+        <div class="logo-sub">SLEEP TRACKER</div>
+      </div>
+    </div>
+    <div class="header-status">
+      <div class="status-dot" id="activeDot"></div>
+      <span id="headerStatus">غير نشط</span>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showPage('home')">الرئيسية</button>
+    <button class="nav-btn" onclick="showPage('settings')">الإعدادات</button>
+    <button class="nav-btn" onclick="showPage('log')">السجل</button>
+  </nav>
+
+  <!-- HOME PAGE -->
+  <div class="page active" id="page-home">
+    
+    <div id="notifBanner" class="notif-banner" onclick="requestNotifPermission()" style="display:none;">
+      <div class="notif-banner-icon">🔔</div>
+      <div class="notif-banner-text">فعّل الإشعارات عشان التطبيق يشتغل صح</div>
+      <div class="notif-banner-action">فعّل ←</div>
+    </div>
+
+    <div class="status-card">
+      <div class="date-label" id="dateLabel">—</div>
+      <div class="big-clock" id="bigClock">--:--</div>
+      <div id="stateChip" class="current-state awake">
+        <span>🟢</span> صاحي
+      </div>
+
+      <div class="timer-bar" id="timerBar">
+        <div class="timer-fill" id="timerFill" style="width:100%"></div>
+      </div>
+      <div class="timer-label" id="timerLabel">⏳ انتظار ردك — 10 دقايق</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="statToday">0</div>
+        <div class="stat-label">إشعار اليوم</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statSleep">—</div>
+        <div class="stat-label">آخر نوم</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statEntries">0</div>
+        <div class="stat-label">إجمالي السجلات</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>⚡</span> تجربة يدوية</div>
+      <button class="btn-primary" onclick="triggerCheckIn()">ابعت إشعار الآن (تجربة)</button>
+      <button class="btn-secondary" onclick="markSleepNow()">😴 سجّل نايم دلوقتي</button>
+    </div>
+
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div class="page" id="page-settings">
+
+    <div class="card">
+      <div class="card-title"><span>🕐</span> وقت الفحص الأول</div>
+      <div class="time-slots">
+        <div class="time-slot">
+          <div class="time-slot-label">من</div>
+          <input type="time" id="startTime" value="23:30" onchange="saveSettings()"/>
+        </div>
+        <div class="time-slot">
+          <div class="time-slot-label">حتى</div>
+          <input type="time" id="endTime" value="03:00" onchange="saveSettings()"/>
+        </div>
+      </div>
+      <p style="font-size:12px; color:var(--muted)">التطبيق يبعت إشعار كل 30 دقيقة في الفترة دي</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>⏱️</span> وقت الانتظار</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <input type="range" id="waitMinutes" min="5" max="30" value="10" 
+          style="flex:1;accent-color:var(--accent);" onchange="updateWaitLabel();saveSettings()"/>
+        <span id="waitLabel" style="font-size:18px;font-weight:700;min-width:50px;text-align:center;">10 د</span>
+      </div>
+      <p style="font-size:12px;color:var(--muted)">لو ما رديتش خلال الفترة دي → يُسجَّل "نام"</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>🎛️</span> خيارات</div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">التشغيل التلقائي</div>
+          <div class="toggle-desc">يبدأ المراقبة تلقائياً</div>
+        </div>
+        <button class="toggle on" id="toggleAuto" onclick="toggleSetting('auto')"></button>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">صوت الإشعار</div>
+          <div class="toggle-desc">ينبّه بصوت عند الإشعار</div>
+        </div>
+        <button class="toggle" id="toggleSound" onclick="toggleSetting('sound')"></button>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">اهتزاز</div>
+          <div class="toggle-desc">يهتز عند الإشعار</div>
+        </div>
+        <button class="toggle on" id="toggleVibrate" onclick="toggleSetting('vibrate')"></button>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="saveAndActivate()">💾 حفظ وتفعيل</button>
+    
+  </div>
+
+  <!-- LOG PAGE -->
+  <div class="page" id="page-log">
+    
+    <div class="log-header">
+      <div class="log-title">📋 السجل</div>
+      <button class="clear-btn" onclick="confirmClear()">🗑 مسح الكل</button>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button class="btn-secondary" style="margin:0;flex:1;font-size:12px;" onclick="exportLog()">📤 تصدير نص</button>
+      <button class="btn-secondary" style="margin:0;flex:1;font-size:12px;" onclick="copyLog()">📋 نسخ</button>
+    </div>
+
+    <div id="exportBox" style="display:none;">
+      <div class="export-area" id="exportText"></div>
+    </div>
+
+    <div id="logContainer">
+      <div class="log-empty">
+        <div class="log-empty-icon">📭</div>
+        <div class="log-empty-text">السجل فاضي لسه<br/>ابدأ المراقبة وهتشوف البيانات هنا</div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- end .app -->
+
+<!-- CHECK-IN MODAL -->
+<div class="overlay" id="checkInOverlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🌙 إنت بتعمل إيه دلوقتي؟</div>
+    <div class="modal-sub" id="modalTime">—</div>
+    <div id="countdownChip" class="countdown-chip">⏳ باقي <span id="countdownNum">10</span> دقايق</div>
+    
+    <div class="check-btns">
+      <div class="check-btn sleep" onclick="handleResponse('sleep')">
+        <div class="check-btn-icon">😴</div>
+        <div class="check-btn-label">نايم</div>
+        <div class="check-btn-sub">سجّل وقت النوم</div>
+      </div>
+      <div class="check-btn awake-btn" onclick="showActivityInput()">
+        <div class="check-btn-icon">✍️</div>
+        <div class="check-btn-label">صاحي</div>
+        <div class="check-btn-sub">قول بتعمل إيه</div>
+      </div>
+    </div>
+
+    <div class="activity-section" id="activitySection">
+      <div class="activity-label">بتعمل إيه بالظبط؟</div>
+      <div class="quick-tags" id="quickTags">
+        <div class="tag" onclick="selectTag(this,'بشتغل')">💻 بشتغل</div>
+        <div class="tag" onclick="selectTag(this,'بذاكر')">📚 بذاكر</div>
+        <div class="tag" onclick="selectTag(this,'بتفرج')">📺 بتفرج</div>
+        <div class="tag" onclick="selectTag(this,'بقرا')">📖 بقرا</div>
+        <div class="tag" onclick="selectTag(this,'على الموبايل')">📱 على الموبايل</div>
+        <div class="tag" onclick="selectTag(this,'بلعب')">🎮 بلعب</div>
+      </div>
+      <textarea class="activity-textarea" id="activityInput" placeholder="أو اكتب حاجة تانية..."></textarea>
+      <button class="btn-primary" onclick="handleResponse('activity')">✅ تسجيل</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let settings = {
+  startTime: '23:30',
+  endTime: '03:00',
+  waitMinutes: 10,
+  auto: true,
+  sound: false,
+  vibrate: true
+};
+
+let log = [];
+let checkTimer = null;
+let countdownTimer = null;
+let scheduleInterval = null;
+let currentCheckTime = null;
+let countdownSeconds = 0;
+let isTrackerActive = false;
+
+// ===== INIT =====
+function init() {
+  loadData();
+  startClock();
+  checkNotifPermission();
+  renderLog();
+  updateStats();
+  
+  if (settings.auto) {
+    startScheduler();
+  }
+}
+
+function loadData() {
+  try {
+    const s = localStorage.getItem('sleepSettings');
+    if (s) settings = { ...settings, ...JSON.parse(s) };
+    
+    const l = localStorage.getItem('sleepLog');
+    if (l) log = JSON.parse(l);
+    
+    // Apply to UI
+    document.getElementById('startTime').value = settings.startTime;
+    document.getElementById('endTime').value = settings.endTime;
+    document.getElementById('waitMinutes').value = settings.waitMinutes;
+    updateWaitLabel();
+    
+    updateToggleUI('auto');
+    updateToggleUI('sound');
+    updateToggleUI('vibrate');
+  } catch(e) {}
+}
+
+function saveData() {
+  localStorage.setItem('sleepSettings', JSON.stringify(settings));
+  localStorage.setItem('sleepLog', JSON.stringify(log));
+}
+
+// ===== CLOCK =====
+function startClock() {
+  function tick() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('bigClock').textContent = `${h}:${m}`;
+    
+    const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    document.getElementById('dateLabel').textContent = 
+      `${days[now.getDay()]}، ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ===== NAVIGATION =====
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const pages = ['home','settings','log'];
+  document.querySelectorAll('.nav-btn')[pages.indexOf(page)].classList.add('active');
+  
+  if (page === 'log') renderLog();
+  if (page === 'settings') renderLog();
+}
+
+// ===== NOTIFICATIONS =====
+function checkNotifPermission() {
+  if (!('Notification' in window)) {
+    document.getElementById('notifBanner').style.display = 'flex';
+    document.getElementById('notifBanner').querySelector('.notif-banner-text').textContent = 
+      'متصفحك مش بيدعم الإشعارات — جرب Chrome';
+    return;
+  }
+  if (Notification.permission !== 'granted') {
+    document.getElementById('notifBanner').style.display = 'flex';
+  }
+}
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    document.getElementById('notifBanner').style.display = 'none';
+    showToast('✅ تم تفعيل الإشعارات!');
+  }
+}
+
+function sendNotification(title, body) {
+  if (Notification.permission === 'granted') {
+    const n = new Notification(title, {
+      body,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">🌙</text></svg>',
+      badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">🌙</text></svg>',
+      requireInteraction: true,
+      tag: 'sleep-check'
+    });
+    n.onclick = () => { window.focus(); n.close(); openCheckIn(); };
+  }
+  
+  if (settings.vibrate && navigator.vibrate) {
+    navigator.vibrate([200, 100, 200]);
+  }
+}
+
+// ===== SCHEDULER =====
+function startScheduler() {
+  if (scheduleInterval) clearInterval(scheduleInterval);
+  
+  isTrackerActive = true;
+  document.getElementById('headerStatus').textContent = 'نشط';
+  document.getElementById('activeDot').style.background = 'var(--accent3)';
+  
+  // Check every minute
+  scheduleInterval = setInterval(() => {
+    checkIfTimeToAsk();
+  }, 60000);
+  
+  // Also check immediately
+  checkIfTimeToAsk();
+}
+
+function stopScheduler() {
+  if (scheduleInterval) clearInterval(scheduleInterval);
+  isTrackerActive = false;
+  document.getElementById('headerStatus').textContent = 'متوقف';
+  document.getElementById('activeDot').style.background = 'var(--accent2)';
+}
+
+function checkIfTimeToAsk() {
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  
+  const [sh, sm] = settings.startTime.split(':').map(Number);
+  const [eh, em] = settings.endTime.split(':').map(Number);
+  
+  let startMinutes = sh * 60 + sm;
+  let endMinutes = eh * 60 + em;
+  
+  // Handle overnight (e.g. 23:30 → 03:00)
+  let inRange;
+  if (startMinutes > endMinutes) {
+    inRange = nowMinutes >= startMinutes || nowMinutes <= endMinutes;
+  } else {
+    inRange = nowMinutes >= startMinutes && nowMinutes <= endMinutes;
+  }
+  
+  if (!inRange) return;
+  
+  // Check every 30 minutes - trigger at :00 and :30
+  const mins = now.getMinutes();
+  if (mins === 0 || mins === 30) {
+    triggerCheckIn();
+  }
+}
+
+// ===== CHECK-IN FLOW =====
+function triggerCheckIn() {
+  currentCheckTime = new Date();
+  
+  sendNotification('🌙 إنت بتعمل إيه دلوقتي؟', 'رد خلال ' + settings.waitMinutes + ' دقايق وإلا هيتسجل "نام"');
+  
+  openCheckIn();
+  startCheckCountdown();
+  updateTodayCount();
+}
+
+function openCheckIn() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true });
+  document.getElementById('modalTime').textContent = 'الساعة ' + timeStr;
+  document.getElementById('countdownNum').textContent = settings.waitMinutes;
+  document.getElementById('activitySection').classList.remove('show');
+  document.getElementById('activityInput').value = '';
+  document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+  
+  document.getElementById('checkInOverlay').classList.add('show');
+}
+
+function startCheckCountdown() {
+  clearTimers();
+  
+  countdownSeconds = settings.waitMinutes * 60;
+  
+  // Timer bar on home
+  const bar = document.getElementById('timerBar');
+  const fill = document.getElementById('timerFill');
+  const label = document.getElementById('timerLabel');
+  bar.classList.add('active');
+  label.classList.add('active');
+  fill.style.width = '100%';
+  
+  countdownTimer = setInterval(() => {
+    countdownSeconds--;
+    const remaining = Math.ceil(countdownSeconds / 60);
+    document.getElementById('countdownNum').textContent = remaining;
+    
+    // Update timer bar
+    const pct = (countdownSeconds / (settings.waitMinutes * 60)) * 100;
+    fill.style.width = pct + '%';
+    label.textContent = `⏳ باقي ${remaining} دقيقة — لو ما ردتش هيتسجل نام`;
+    
+    if (countdownSeconds <= 0) {
+      clearTimers();
+      bar.classList.remove('active');
+      label.classList.remove('active');
+      autoSleepLog();
+    }
+  }, 1000);
+}
+
+function clearTimers() {
+  if (checkTimer) clearTimeout(checkTimer);
+  if (countdownTimer) clearInterval(countdownTimer);
+  checkTimer = null;
+  countdownTimer = null;
+}
+
+function autoSleepLog() {
+  // Close modal if open
+  document.getElementById('checkInOverlay').classList.remove('show');
+  
+  const t = currentCheckTime || new Date();
+  addLogEntry('sleep', 'نام تلقائياً (ما ردش)', t);
+  updateStateChip('asleep');
+  showToast('😴 تم تسجيل النوم تلقائياً');
+}
+
+// ===== RESPONSES =====
+function handleResponse(type) {
+  clearTimers();
+  document.getElementById('timerBar').classList.remove('active');
+  document.getElementById('timerLabel').classList.remove('active');
+  
+  if (type === 'sleep') {
+    const t = new Date();
+    addLogEntry('sleep', 'نام', t);
+    updateStateChip('asleep');
+    document.getElementById('checkInOverlay').classList.remove('show');
+    showToast('😴 تم تسجيل النوم');
+    
+  } else if (type === 'activity') {
+    const input = document.getElementById('activityInput').value.trim();
+    const activeTags = [...document.querySelectorAll('.tag.active')].map(t => t.textContent.trim());
+    const activity = input || activeTags.join('، ') || 'نشاط غير محدد';
+    
+    const t = new Date();
+    addLogEntry('activity', activity, t);
+    updateStateChip('awake');
+    document.getElementById('checkInOverlay').classList.remove('show');
+    showToast('✅ تم التسجيل!');
+    
+    // Schedule next check after 30 min
+    setTimeout(() => {
+      if (isTrackerActive) triggerCheckIn();
+    }, 30 * 60 * 1000);
+  }
+}
+
+function showActivityInput() {
+  document.getElementById('activitySection').classList.add('show');
+}
+
+function selectTag(el, text) {
+  el.classList.toggle('active');
+  // Put in textarea
+  const current = document.getElementById('activityInput').value;
+  if (el.classList.contains('active')) {
+    document.getElementById('activityInput').value = current ? current + '، ' + text : text;
+  }
+}
+
+// ===== LOG =====
+function addLogEntry(type, text, time) {
+  log.unshift({ type, text, time: time.toISOString() });
+  if (log.length > 500) log.pop();
+  saveData();
+  renderLog();
+  updateStats();
+}
+
+function renderLog() {
+  const container = document.getElementById('logContainer');
+  
+  if (log.length === 0) {
+    container.innerHTML = `
+      <div class="log-empty">
+        <div class="log-empty-icon">📭</div>
+        <div class="log-empty-text">السجل فاضي لسه<br/>ابدأ المراقبة وهتشوف البيانات هنا</div>
+      </div>`;
+    return;
+  }
+  
+  const icons = { sleep: '😴', activity: '✍️', awake: '🟢' };
+  const labels = { sleep: 'نام', activity: 'نشاط', awake: 'صاحي' };
+  
+  container.innerHTML = log.map(e => {
+    const d = new Date(e.time);
+    const timeStr = d.toLocaleString('ar-EG', {
+      month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true
+    });
+    return `
+      <div class="log-entry">
+        <div class="entry-icon ${e.type}">${icons[e.type] || '📝'}</div>
+        <div class="entry-content">
+          <div class="entry-type ${e.type}">${labels[e.type] || e.type}</div>
+          <div class="entry-text">${e.text}</div>
+          <div class="entry-time">${timeStr}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateStats() {
+  const today = new Date().toDateString();
+  const todayEntries = log.filter(e => new Date(e.time).toDateString() === today);
+  document.getElementById('statToday').textContent = todayEntries.length;
+  document.getElementById('statEntries').textContent = log.length;
+  
+  const lastSleep = log.find(e => e.type === 'sleep');
+  if (lastSleep) {
+    const d = new Date(lastSleep.time);
+    document.getElementById('statSleep').textContent = d.toLocaleTimeString('ar-EG', {
+      hour: '2-digit', minute: '2-digit', hour12: true
+    });
+  }
+}
+
+function updateTodayCount() {
+  const today = new Date().toDateString();
+  const count = log.filter(e => new Date(e.time).toDateString() === today).length;
+  document.getElementById('statToday').textContent = count + 1;
+}
+
+// ===== SETTINGS =====
+function saveSettings() {
+  settings.startTime = document.getElementById('startTime').value;
+  settings.endTime = document.getElementById('endTime').value;
+  settings.waitMinutes = parseInt(document.getElementById('waitMinutes').value);
+  saveData();
+}
+
+function updateWaitLabel() {
+  document.getElementById('waitLabel').textContent = document.getElementById('waitMinutes').value + ' د';
+}
+
+function toggleSetting(key) {
+  settings[key] = !settings[key];
+  updateToggleUI(key);
+  saveData();
+}
+
+function updateToggleUI(key) {
+  const btn = document.getElementById('toggle' + key.charAt(0).toUpperCase() + key.slice(1));
+  if (btn) {
+    if (settings[key]) btn.classList.add('on');
+    else btn.classList.remove('on');
+  }
+}
+
+function saveAndActivate() {
+  saveSettings();
+  if (settings.auto) startScheduler();
+  else stopScheduler();
+  showToast('✅ تم الحفظ والتفعيل!');
+  showPage('home');
+}
+
+// ===== MANUAL ACTIONS =====
+function markSleepNow() {
+  addLogEntry('sleep', 'نام يدوياً', new Date());
+  updateStateChip('asleep');
+  showToast('😴 تم تسجيل النوم');
+}
+
+function updateStateChip(state) {
+  const chip = document.getElementById('stateChip');
+  if (state === 'asleep') {
+    chip.className = 'current-state asleep';
+    chip.innerHTML = '<span>💤</span> نايم';
+  } else {
+    chip.className = 'current-state awake';
+    chip.innerHTML = '<span>🟢</span> صاحي';
+  }
+}
+
+// ===== EXPORT =====
+function exportLog() {
+  const box = document.getElementById('exportBox');
+  const text = document.getElementById('exportText');
+  
+  if (log.length === 0) { showToast('السجل فاضي!'); return; }
+  
+  const lines = log.map(e => {
+    const d = new Date(e.time);
+    const timeStr = d.toLocaleString('ar-EG');
+    return `[${timeStr}] ${e.type === 'sleep' ? 'نام' : 'نشاط'}: ${e.text}`;
+  }).join('\n');
+  
+  text.textContent = lines;
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+function copyLog() {
+  if (log.length === 0) { showToast('السجل فاضي!'); return; }
+  
+  const lines = log.map(e => {
+    const d = new Date(e.time);
+    return `${d.toLocaleString('ar-EG')} | ${e.type === 'sleep' ? 'نام' : 'نشاط'}: ${e.text}`;
+  }).join('\n');
+  
+  navigator.clipboard.writeText(lines).then(() => {
+    showToast('📋 تم النسخ!');
+  }).catch(() => {
+    exportLog();
+    showToast('افتح التصدير وانسخ يدوياً');
+  });
+}
+
+function confirmClear() {
+  if (confirm('مسح كل السجل؟')) {
+    log = [];
+    saveData();
+    renderLog();
+    updateStats();
+    showToast('🗑 تم المسح');
+  }
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const old = document.querySelector('.toast');
+  if (old) old.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  toast.style.cssText = `
+    position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
+    background:#1a1a30; border:1px solid var(--border); color:var(--text);
+    padding:12px 20px; border-radius:20px; font-size:14px; z-index:999;
+    animation:fadeIn 0.3s ease; white-space:nowrap;
+    box-shadow:0 4px 20px rgba(0,0,0,0.5);
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+// ===== CLOSE MODAL ON BACKDROP =====
+document.getElementById('checkInOverlay').addEventListener('click', function(e) {
+  if (e.target === this) {
+    // Don't close - user must respond
+  }
+});
+
+// ===== START =====
+init();
+
+// Register basic service worker for PWA (inline)
+if ('serviceWorker' in navigator) {
+  const sw = `
+    self.addEventListener('install', e => self.skipWaiting());
+    self.addEventListener('activate', e => clients.claim());
+    self.addEventListener('fetch', e => {});
+  `;
+  const blob = new Blob([sw], { type: 'application/javascript' });
+  const url = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(url).catch(() => {});
+}
+</script>
+</body>
+</html>
