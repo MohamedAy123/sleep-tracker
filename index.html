@@ -4,618 +4,385 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <meta name="theme-color" content="#070b14"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="مراقب النوم"/>
 <title>مراقب النوم</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet"/>
 
 <style>
 :root {
-  --bg:        #070b14;
-  --surface:   #0d1220;
-  --card:      #111827;
-  --border:    #1e2a3a;
-  --border2:   #243347;
-  --accent:    #00d4ff;
-  --accent-d:  #0099bb;
-  --gold:      #f5c842;
-  --rose:      #ff4f7b;
-  --mint:      #00e5a0;
-  --text:      #e8eef8;
-  --muted:     #5a7a99;
-  --muted2:    #3a5470;
-  --sleep-c:   #5b8cff;
-  --act-c:     #f5c842;
-  --safe-top:  env(safe-area-inset-top, 0px);
-  --safe-bot:  env(safe-area-inset-bottom, 0px);
+  --bg:      #070b14;
+  --surface: #0d1220;
+  --card:    #111827;
+  --border:  #1e2a3a;
+  --border2: #243347;
+  --accent:  #00d4ff;
+  --mint:    #00e5a0;
+  --rose:    #ff4f7b;
+  --sleep-c: #5b8cff;
+  --act-c:   #f5c842;
+  --text:    #e8eef8;
+  --muted:   #5a7a99;
+  --muted2:  #3a5470;
+  --safe-top: env(safe-area-inset-top,  0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
 }
-
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-
-html, body {
-  height: 100%;
-  overflow: hidden;
-}
-
+html,body { height:100%; overflow:hidden; }
 body {
-  font-family: 'Tajawal', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  overscroll-behavior: none;
+  font-family:'Tajawal',sans-serif;
+  background:var(--bg); color:var(--text);
+  overscroll-behavior:none;
 }
 
-/* ── STAR FIELD ── */
-.stars {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+/* ambient */
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
   background:
-    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
-    radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 50% 10%, rgba(0,212,255,0.5) 0%, transparent 100%),
-    radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.3) 0%, transparent 100%),
-    radial-gradient(1px 1px at 85% 25%, rgba(255,255,255,0.5) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 40% 75%, rgba(0,229,160,0.4) 0%, transparent 100%),
-    radial-gradient(1px 1px at 90% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
-    radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
-    radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.2) 0%, transparent 100%),
-    radial-gradient(2px 2px at 5% 55%, rgba(0,212,255,0.3) 0%, transparent 100%);
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(0,212,255,.06) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 30% at 80% 90%, rgba(0,229,160,.04) 0%,transparent 60%);
 }
 
-.ambient {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background:
-    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(0,212,255,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 30% at 80% 90%, rgba(0,229,160,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 60% at 90% 20%, rgba(91,140,255,0.05) 0%, transparent 60%);
-}
-
-/* ── APP SHELL ── */
 .app {
-  position: relative; z-index: 1;
-  height: 100dvh;
-  display: flex; flex-direction: column;
-  max-width: 430px; margin: 0 auto;
+  position:relative; z-index:1;
+  height:100dvh; display:flex; flex-direction:column;
+  max-width:430px; margin:0 auto;
 }
 
 /* ── HEADER ── */
 .header {
-  padding: calc(var(--safe-top) + 14px) 20px 0;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0;
+  padding:calc(var(--safe-top) + 14px) 20px 0;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
 }
-
-.brand { display: flex; align-items: center; gap: 10px; }
-
+.brand { display:flex; align-items:center; gap:10px; }
 .brand-moon {
-  width: 38px; height: 38px;
-  background: linear-gradient(135deg, #1a2540, #0d1830);
-  border: 1px solid var(--border2);
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-  box-shadow: 0 0 16px rgba(0,212,255,0.15);
-  position: relative;
+  width:38px; height:38px;
+  background:linear-gradient(135deg,#1a2540,#0d1830);
+  border:1px solid var(--border2); border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; box-shadow:0 0 16px rgba(0,212,255,.15);
 }
-
-.brand-moon::after {
-  content: '';
-  position: absolute; inset: -1px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(0,212,255,0.3), transparent 60%);
-  pointer-events: none;
+.brand-name { font-size:17px; font-weight:800; letter-spacing:-.3px; }
+.brand-sub  { font-size:10px; color:var(--muted); letter-spacing:1.5px; }
+.hbadge {
+  display:flex; align-items:center; gap:6px;
+  padding:6px 12px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:20px; font-size:12px; color:var(--muted);
 }
-
-.brand-name { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
-.brand-sub  { font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: 1.5px; margin-top: 1px; }
-
-.header-badge {
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  font-size: 12px; color: var(--muted);
-}
-
-.pulse-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--muted2);
-  transition: background 0.3s;
-}
-.pulse-dot.active {
-  background: var(--mint);
-  animation: blink 2s ease-in-out infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.dot { width:6px; height:6px; border-radius:50%; background:var(--muted2); transition:.3s; }
+.dot.on { background:var(--mint); animation:blink 2s infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* ── NAV ── */
 .nav {
-  display: flex; margin: 16px 20px 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 4px;
-  flex-shrink: 0;
+  display:flex; margin:16px 20px 0;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:4px; flex-shrink:0;
 }
-
-.nav-btn {
-  flex: 1; padding: 9px 0;
-  background: none; border: none;
-  color: var(--muted); font-family: 'Tajawal', sans-serif;
-  font-size: 13px; font-weight: 500;
-  border-radius: 10px; cursor: pointer;
-  transition: all 0.2s;
+.nb {
+  flex:1; padding:9px 0; background:none; border:none;
+  color:var(--muted); font-family:'Tajawal',sans-serif;
+  font-size:13px; font-weight:500; border-radius:10px; cursor:pointer;
+  transition:.2s;
 }
-.nav-btn.active {
-  background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(91,140,255,0.1));
-  color: var(--accent);
-  font-weight: 700;
-  box-shadow: inset 0 1px 0 rgba(0,212,255,0.2);
+.nb.act {
+  background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(91,140,255,.1));
+  color:var(--accent); font-weight:700;
 }
 
 /* ── PAGES ── */
-.pages { flex: 1; overflow: hidden; position: relative; }
-
+.pages { flex:1; overflow:hidden; position:relative; }
 .page {
-  position: absolute; inset: 0;
-  overflow-y: auto; overflow-x: hidden;
-  padding: 16px 20px calc(var(--safe-bot) + 16px);
-  opacity: 0; pointer-events: none;
-  transform: translateY(8px);
-  transition: opacity 0.25s, transform 0.25s;
-  -webkit-overflow-scrolling: touch;
+  position:absolute; inset:0;
+  overflow-y:auto; padding:16px 20px calc(var(--safe-bot)+16px);
+  opacity:0; pointer-events:none; transform:translateY(8px);
+  transition:opacity .25s,transform .25s;
+  -webkit-overflow-scrolling:touch;
 }
-.page.active { opacity: 1; pointer-events: all; transform: translateY(0); }
+.page.act { opacity:1; pointer-events:all; transform:none; }
 
 /* ── CLOCK CARD ── */
 .clock-card {
-  background: linear-gradient(145deg, #0d1830 0%, #0a1220 100%);
-  border: 1px solid var(--border2);
-  border-radius: 22px;
-  padding: 24px;
-  text-align: center;
-  position: relative; overflow: hidden;
-  margin-bottom: 14px;
+  background:linear-gradient(145deg,#0d1830,#0a1220);
+  border:1px solid var(--border2); border-radius:22px;
+  padding:24px; text-align:center; position:relative; overflow:hidden;
+  margin-bottom:14px;
 }
-
 .clock-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent), var(--mint), transparent);
-  opacity: 0.6;
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),var(--mint),transparent);
+  opacity:.6;
 }
-
-.clock-card::after {
-  content: '';
-  position: absolute;
-  top: -40px; left: 50%; transform: translateX(-50%);
-  width: 200px; height: 80px;
-  background: radial-gradient(ellipse, rgba(0,212,255,0.08) 0%, transparent 70%);
+.clk-lbl { font-size:11px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:6px; }
+.clk-time {
+  font-size:62px; font-weight:900; letter-spacing:-3px; line-height:1;
+  background:linear-gradient(180deg,#fff,var(--accent));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; margin-bottom:4px;
 }
-
-.clock-label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
-
-.clock-time {
-  font-size: 62px; font-weight: 900;
-  letter-spacing: -3px; line-height: 1;
-  background: linear-gradient(180deg, #ffffff 0%, var(--accent) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 4px;
-}
-
-.clock-date { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
-
+.clk-date { font-size:13px; color:var(--muted); margin-bottom:18px; }
 .state-pill {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 9px 20px;
-  border-radius: 30px;
-  font-size: 14px; font-weight: 700;
-  transition: all 0.4s;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:9px 20px; border-radius:30px; font-size:14px; font-weight:700;
+  transition:.4s;
 }
-.state-pill.awake  { background: rgba(0,229,160,0.1); color: var(--mint);   border: 1px solid rgba(0,229,160,0.25); }
-.state-pill.asleep { background: rgba(91,140,255,0.1); color: var(--sleep-c); border: 1px solid rgba(91,140,255,0.25); }
+.state-pill.awake  { background:rgba(0,229,160,.1); color:var(--mint);   border:1px solid rgba(0,229,160,.25); }
+.state-pill.asleep { background:rgba(91,140,255,.1); color:var(--sleep-c); border:1px solid rgba(91,140,255,.25); }
 
-/* Progress bar */
-.progress-wrap { margin-top: 16px; display: none; }
-.progress-wrap.show { display: block; }
-
-.progress-track {
-  height: 4px; background: var(--border);
-  border-radius: 2px; overflow: hidden;
+.prog-wrap { margin-top:16px; display:none; }
+.prog-wrap.show { display:block; }
+.prog-track { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.prog-fill {
+  height:100%; width:100%;
+  background:linear-gradient(90deg,var(--rose),var(--accent));
+  border-radius:2px; transition:width 1s linear;
 }
-.progress-fill {
-  height: 100%; width: 100%;
-  background: linear-gradient(90deg, var(--rose), var(--accent));
-  border-radius: 2px;
-  transition: width 1s linear;
-}
-.progress-text { font-size: 11px; color: var(--muted); text-align: center; margin-top: 7px; }
+.prog-text { font-size:11px; color:var(--muted); text-align:center; margin-top:7px; }
 
 /* ── STATS ── */
-.stats-row {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 10px; margin-bottom: 14px;
-}
-
-.stat-box {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 14px 10px;
-  text-align: center;
-}
-
+.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+.stat-box { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:14px 10px; text-align:center; }
 .stat-num {
-  font-size: 26px; font-weight: 900;
-  background: linear-gradient(135deg, var(--accent), var(--mint));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1;
+  font-size:26px; font-weight:900;
+  background:linear-gradient(135deg,var(--accent),var(--mint));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; line-height:1;
 }
-.stat-lbl { font-size: 10px; color: var(--muted); margin-top: 5px; font-weight: 400; }
+.stat-lbl { font-size:10px; color:var(--muted); margin-top:5px; }
 
 /* ── PERMISSION BANNER ── */
 .perm-banner {
-  background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(91,140,255,0.06));
-  border: 1px solid rgba(0,212,255,0.25);
-  border-radius: 16px;
-  padding: 16px;
-  display: flex; align-items: center; gap: 14px;
-  margin-bottom: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
+  background:linear-gradient(135deg,rgba(255,79,123,.1),rgba(255,79,123,.05));
+  border:1px solid rgba(255,79,123,.35); border-radius:16px;
+  padding:16px; display:flex; align-items:center; gap:14px;
+  margin-bottom:14px; cursor:pointer; transition:.2s;
 }
-.perm-banner:active { transform: scale(0.98); }
-.perm-icon { font-size: 28px; flex-shrink: 0; }
-.perm-body { flex: 1; }
-.perm-title { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 3px; }
-.perm-desc  { font-size: 12px; color: var(--muted); line-height: 1.4; }
-.perm-arrow { font-size: 18px; color: var(--accent); flex-shrink: 0; }
+.perm-banner:active { transform:scale(.98); }
+.perm-icon { font-size:28px; flex-shrink:0; }
+.perm-title { font-size:14px; font-weight:700; color:var(--rose); margin-bottom:3px; }
+.perm-desc  { font-size:12px; color:var(--muted); line-height:1.4; }
 
 /* ── ACTION CARD ── */
-.action-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 18px;
-  margin-bottom: 14px;
+.acard { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:14px; }
+.slbl {
+  font-size:11px; font-weight:700; color:var(--muted);
+  text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;
+  display:flex; align-items:center; gap:7px;
 }
-.section-label {
-  font-size: 11px; font-weight: 700; color: var(--muted);
-  text-transform: uppercase; letter-spacing: 1px;
-  margin-bottom: 14px;
-  display: flex; align-items: center; gap: 7px;
-}
-.section-label::after {
-  content: ''; flex: 1; height: 1px; background: var(--border);
-}
+.slbl::after { content:''; flex:1; height:1px; background:var(--border); }
 
 /* ── BUTTONS ── */
 .btn-main {
-  width: 100%; padding: 16px;
-  background: linear-gradient(135deg, #0080aa, #005577);
-  border: 1px solid rgba(0,212,255,0.3);
-  border-radius: 14px;
-  color: #fff; font-family: 'Tajawal', sans-serif;
-  font-size: 15px; font-weight: 700;
-  cursor: pointer; transition: all 0.2s;
-  letter-spacing: 0.2px;
-  position: relative; overflow: hidden;
+  width:100%; padding:16px;
+  background:linear-gradient(135deg,#0080aa,#005577);
+  border:1px solid rgba(0,212,255,.3); border-radius:14px;
+  color:#fff; font-family:'Tajawal',sans-serif;
+  font-size:15px; font-weight:700; cursor:pointer; transition:.2s;
+  position:relative; overflow:hidden;
 }
 .btn-main::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,212,255,0.5), transparent);
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,212,255,.5),transparent);
 }
-.btn-main:active { transform: scale(0.98); opacity: 0.9; }
-
+.btn-main:active { transform:scale(.98); }
 .btn-ghost {
-  width: 100%; padding: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  color: var(--text); font-family: 'Tajawal', sans-serif;
-  font-size: 14px; font-weight: 500;
-  cursor: pointer; transition: all 0.2s;
-  margin-top: 10px;
+  width:100%; padding:14px; background:var(--surface);
+  border:1px solid var(--border); border-radius:14px;
+  color:var(--text); font-family:'Tajawal',sans-serif;
+  font-size:14px; font-weight:500; cursor:pointer; transition:.2s; margin-top:10px;
 }
-.btn-ghost:active { border-color: var(--accent); color: var(--accent); }
+.btn-ghost:active { border-color:var(--accent); color:var(--accent); }
 
 /* ── SETTINGS ── */
-.settings-section { margin-bottom: 18px; }
-
-.input-group {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
+.settings-section { margin-bottom:18px; }
+.igroup { background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+.irow {
+  display:flex; align-items:center; padding:14px 16px;
+  border-bottom:1px solid var(--border); gap:12px;
 }
-
-.input-row {
-  display: flex; align-items: center;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  gap: 12px;
+.irow:last-child { border-bottom:none; }
+.iicon { font-size:20px; flex-shrink:0; }
+.iinfo { flex:1; }
+.ilbl { font-size:14px; font-weight:600; margin-bottom:2px; }
+.idesc{ font-size:11px; color:var(--muted); }
+.tinput {
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:10px; padding:8px 12px;
+  color:var(--accent); font-family:'Tajawal',sans-serif;
+  font-size:16px; font-weight:700; text-align:center;
+  direction:ltr; width:90px; cursor:pointer;
 }
-.input-row:last-child { border-bottom: none; }
-
-.input-icon { font-size: 20px; flex-shrink: 0; }
-.input-info { flex: 1; }
-.input-label { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-.input-desc  { font-size: 11px; color: var(--muted); }
-
-.time-input {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 10px;
-  padding: 8px 12px;
-  color: var(--accent); font-family: 'Tajawal', sans-serif;
-  font-size: 16px; font-weight: 700;
-  text-align: center; direction: ltr;
-  width: 90px;
-  cursor: pointer;
-}
-.time-input::-webkit-calendar-picker-indicator { display: none; }
-.time-input:focus { outline: none; border-color: var(--accent); }
-
-/* Range slider */
-.range-wrap { display: flex; align-items: center; gap: 12px; width: 130px; }
-.range-val {
-  font-size: 16px; font-weight: 900; color: var(--accent);
-  min-width: 36px; text-align: left; direction: ltr;
-}
+.tinput::-webkit-calendar-picker-indicator { display:none; }
+.tinput:focus { outline:none; border-color:var(--accent); }
+.rwrap { display:flex; align-items:center; gap:12px; width:130px; }
+.rval { font-size:16px; font-weight:900; color:var(--accent); min-width:36px; text-align:left; direction:ltr; }
 input[type=range] {
-  flex: 1; height: 4px;
-  -webkit-appearance: none; appearance: none;
-  background: var(--border2); border-radius: 2px; cursor: pointer;
+  flex:1; height:4px; -webkit-appearance:none; appearance:none;
+  background:var(--border2); border-radius:2px; cursor:pointer;
 }
 input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 8px rgba(0,212,255,0.4);
+  -webkit-appearance:none;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--accent); box-shadow:0 0 8px rgba(0,212,255,.4);
 }
-
-/* Toggle */
-.toggle-switch {
-  width: 48px; height: 26px;
-  background: var(--border2);
-  border-radius: 13px;
-  position: relative;
-  cursor: pointer;
-  border: none;
-  transition: background 0.3s;
-  flex-shrink: 0;
+.tog {
+  width:48px; height:26px; background:var(--border2);
+  border-radius:13px; position:relative; cursor:pointer;
+  border:none; transition:.3s; flex-shrink:0;
 }
-.toggle-switch.on { background: var(--accent-d); }
-.toggle-switch::after {
-  content: '';
-  position: absolute;
-  width: 20px; height: 20px;
-  background: white;
-  border-radius: 50%;
-  top: 3px; right: 25px;
-  transition: right 0.25s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+.tog.on { background:#0099bb; }
+.tog::after {
+  content:''; position:absolute;
+  width:20px; height:20px; background:white;
+  border-radius:50%; top:3px; right:25px;
+  transition:right .25s; box-shadow:0 1px 4px rgba(0,0,0,.4);
 }
-.toggle-switch.on::after { right: 3px; }
-
+.tog.on::after { right:3px; }
 .save-btn {
-  width: 100%; padding: 17px;
-  background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,229,160,0.1));
-  border: 1px solid rgba(0,212,255,0.4);
-  border-radius: 16px;
-  color: var(--accent); font-family: 'Tajawal', sans-serif;
-  font-size: 16px; font-weight: 800;
-  cursor: pointer; transition: all 0.2s;
-  margin-top: 4px;
+  width:100%; padding:17px;
+  background:linear-gradient(135deg,rgba(0,212,255,.2),rgba(0,229,160,.1));
+  border:1px solid rgba(0,212,255,.4); border-radius:16px;
+  color:var(--accent); font-family:'Tajawal',sans-serif;
+  font-size:16px; font-weight:800; cursor:pointer; transition:.2s;
 }
-.save-btn:active { transform: scale(0.98); }
+.save-btn:active { transform:scale(.98); }
 
 /* ── LOG ── */
-.log-toolbar {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px;
+.log-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.log-cnt { font-size:13px; color:var(--muted); }
+.log-acts { display:flex; gap:8px; }
+.ibtn {
+  padding:7px 14px; background:var(--surface);
+  border:1px solid var(--border); border-radius:10px;
+  color:var(--muted); font-family:'Tajawal',sans-serif;
+  font-size:12px; cursor:pointer; transition:.2s;
 }
-.log-count { font-size: 13px; color: var(--muted); }
-.log-actions { display: flex; gap: 8px; }
-
-.icon-btn {
-  padding: 7px 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--muted); font-family: 'Tajawal', sans-serif;
-  font-size: 12px; cursor: pointer;
-  transition: all 0.2s;
+.ibtn:hover { border-color:var(--accent); color:var(--accent); }
+.ibtn.danger { border-color:rgba(255,79,123,.3); color:var(--rose); }
+.log-empty { text-align:center; padding:70px 20px; }
+.le-emoji { font-size:56px; opacity:.3; margin-bottom:14px; }
+.le-title { font-size:16px; font-weight:700; color:var(--muted); margin-bottom:6px; }
+.le-sub   { font-size:13px; color:var(--muted2); }
+.lentry {
+  display:flex; gap:12px; align-items:flex-start;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:14px; margin-bottom:10px;
+  animation:ein .3s ease;
 }
-.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
-.icon-btn.danger { border-color: rgba(255,79,123,0.3); color: var(--rose); }
-
-.log-empty {
-  text-align: center; padding: 70px 20px;
-}
-.log-empty-emoji { font-size: 56px; opacity: 0.3; margin-bottom: 14px; }
-.log-empty-title { font-size: 16px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
-.log-empty-sub   { font-size: 13px; color: var(--muted2); }
-
-.log-entry {
-  display: flex; gap: 12px; align-items: flex-start;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 10px;
-  animation: entryIn 0.3s ease;
-}
-@keyframes entryIn { from { opacity:0; transform: translateX(10px); } to { opacity:1; transform: none; } }
-
-.entry-dot {
-  width: 10px; height: 10px; border-radius: 50%;
-  flex-shrink: 0; margin-top: 5px;
-}
-.entry-dot.sleep    { background: var(--sleep-c); box-shadow: 0 0 6px rgba(91,140,255,0.6); }
-.entry-dot.activity { background: var(--act-c);   box-shadow: 0 0 6px rgba(245,200,66,0.5); }
-.entry-dot.auto     { background: var(--rose);    box-shadow: 0 0 6px rgba(255,79,123,0.5); }
-
-.entry-body { flex: 1; }
-.entry-type { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px; }
-.entry-type.sleep    { color: var(--sleep-c); }
-.entry-type.activity { color: var(--act-c); }
-.entry-type.auto     { color: var(--rose); }
-.entry-text { font-size: 14px; font-weight: 500; line-height: 1.4; margin-bottom: 4px; }
-.entry-time { font-size: 11px; color: var(--muted2); direction: ltr; text-align: right; }
-
-/* export */
-.export-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px;
-  font-family: monospace; font-size: 11px;
-  color: var(--muted); direction: ltr;
-  max-height: 140px; overflow-y: auto;
-  white-space: pre-wrap; line-height: 1.7;
-  margin-bottom: 10px;
-  display: none;
+@keyframes ein{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+.edot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+.edot.sleep    { background:var(--sleep-c); box-shadow:0 0 6px rgba(91,140,255,.6); }
+.edot.activity { background:var(--act-c);   box-shadow:0 0 6px rgba(245,200,66,.5); }
+.edot.auto     { background:var(--rose);    box-shadow:0 0 6px rgba(255,79,123,.5); }
+.ebody { flex:1; }
+.etype { font-size:11px; font-weight:700; letter-spacing:.5px; margin-bottom:3px; }
+.etype.sleep    { color:var(--sleep-c); }
+.etype.activity { color:var(--act-c); }
+.etype.auto     { color:var(--rose); }
+.etext { font-size:14px; font-weight:500; line-height:1.4; margin-bottom:4px; }
+.etime { font-size:11px; color:var(--muted2); direction:ltr; text-align:right; }
+.expbox {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:14px;
+  font-family:monospace; font-size:11px; color:var(--muted);
+  direction:ltr; max-height:130px; overflow-y:auto;
+  white-space:pre-wrap; line-height:1.7; margin-bottom:10px; display:none;
 }
 
-/* ── MODAL ── */
+/* ── MODAL SHEET ── */
 .overlay {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(7,11,20,0.9);
-  backdrop-filter: blur(12px);
-  display: flex; align-items: flex-end; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.3s;
+  position:fixed; inset:0; z-index:200;
+  background:rgba(7,11,20,.92); backdrop-filter:blur(12px);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .3s;
 }
-.overlay.show { opacity: 1; pointer-events: all; }
-
+.overlay.show { opacity:1; pointer-events:all; }
 .sheet {
-  background: linear-gradient(180deg, #111827 0%, #0d1220 100%);
-  border: 1px solid var(--border2);
-  border-radius: 26px 26px 0 0;
-  padding: 8px 24px calc(var(--safe-bot) + 32px);
-  width: 100%; max-width: 430px;
-  transform: translateY(30px);
-  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  background:linear-gradient(180deg,#111827,#0d1220);
+  border:1px solid var(--border2); border-radius:26px 26px 0 0;
+  padding:8px 24px calc(var(--safe-bot)+32px);
+  width:100%; max-width:430px;
+  transform:translateY(30px);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
 }
-.overlay.show .sheet { transform: translateY(0); }
-
+.overlay.show .sheet { transform:translateY(0); }
 .sheet::before {
-  content: '';
-  display: block;
-  width: 40px; height: 4px;
-  background: var(--border2);
-  border-radius: 2px;
-  margin: 12px auto 24px;
+  content:''; display:block; width:40px; height:4px;
+  background:var(--border2); border-radius:2px; margin:12px auto 24px;
 }
-
-.sheet-title { font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 4px; }
-.sheet-sub   { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 6px; }
-.sheet-timer {
-  display: inline-block;
-  background: rgba(255,79,123,0.1);
-  border: 1px solid rgba(255,79,123,0.3);
-  color: var(--rose); font-size: 12px; font-weight: 700;
-  padding: 4px 14px; border-radius: 20px;
-  margin-bottom: 24px;
+.sh-title { font-size:22px; font-weight:900; text-align:center; margin-bottom:4px; }
+.sh-sub   { font-size:13px; color:var(--muted); text-align:center; margin-bottom:6px; }
+.sh-timer {
+  display:inline-block;
+  background:rgba(255,79,123,.1); border:1px solid rgba(255,79,123,.3);
+  color:var(--rose); font-size:12px; font-weight:700;
+  padding:4px 14px; border-radius:20px; margin-bottom:24px;
 }
-
-.response-btns {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 12px; margin-bottom: 20px;
+.resp-btns { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+.rbtn {
+  padding:22px 12px; border-radius:18px;
+  border:1.5px solid var(--border2); background:var(--surface);
+  cursor:pointer; transition:.2s; text-align:center;
 }
-
-.resp-btn {
-  padding: 22px 12px;
-  border-radius: 18px;
-  border: 1.5px solid var(--border2);
-  background: var(--surface);
-  cursor: pointer; transition: all 0.2s;
-  text-align: center;
-}
-.resp-btn:active { transform: scale(0.96); }
-
-.resp-btn.btn-sleep {
-  border-color: rgba(91,140,255,0.35);
-}
-.resp-btn.btn-sleep:active, .resp-btn.btn-sleep.sel {
-  background: rgba(91,140,255,0.12);
-  border-color: var(--sleep-c);
-}
-.resp-btn.btn-awake {
-  border-color: rgba(0,229,160,0.35);
-}
-.resp-btn.btn-awake:active, .resp-btn.btn-awake.sel {
-  background: rgba(0,229,160,0.12);
-  border-color: var(--mint);
-}
-
-.resp-emoji { font-size: 36px; margin-bottom: 8px; }
-.resp-label { font-size: 15px; font-weight: 800; margin-bottom: 3px; }
-.resp-sub   { font-size: 11px; color: var(--muted); }
-
-/* activity panel */
-.activity-panel { display: none; animation: fadeUp 0.3s ease; }
-.activity-panel.show { display: block; }
-@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
-
-.tags-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.rbtn:active { transform:scale(.96); }
+.rbtn.rs { border-color:rgba(91,140,255,.35); }
+.rbtn.rs:active,.rbtn.rs.sel { background:rgba(91,140,255,.12); border-color:var(--sleep-c); }
+.rbtn.ra { border-color:rgba(0,229,160,.35); }
+.rbtn.ra:active,.rbtn.ra.sel { background:rgba(0,229,160,.12); border-color:var(--mint); }
+.remi  { font-size:36px; margin-bottom:8px; }
+.rlbl  { font-size:15px; font-weight:800; margin-bottom:3px; }
+.rsub  { font-size:11px; color:var(--muted); }
+.apanel { display:none; animation:fup .3s ease; }
+.apanel.show { display:block; }
+@keyframes fup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.tags-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
 .tag {
-  padding: 7px 16px;
-  background: var(--surface); border: 1px solid var(--border2);
-  border-radius: 20px; font-size: 13px; color: var(--muted);
-  cursor: pointer; transition: all 0.15s;
-  font-family: 'Tajawal', sans-serif;
+  padding:7px 16px; background:var(--surface); border:1px solid var(--border2);
+  border-radius:20px; font-size:13px; color:var(--muted);
+  cursor:pointer; transition:.15s; font-family:'Tajawal',sans-serif;
 }
-.tag.sel {
-  background: rgba(0,212,255,0.1);
-  border-color: var(--accent); color: var(--accent);
+.tag.sel { background:rgba(0,212,255,.1); border-color:var(--accent); color:var(--accent); }
+.ainput {
+  width:100%; background:var(--surface); border:1px solid var(--border2);
+  border-radius:14px; padding:14px 16px; color:var(--text);
+  font-family:'Tajawal',sans-serif; font-size:14px; resize:none;
+  height:76px; outline:none; transition:.2s; margin-bottom:14px;
 }
-
-.activity-input {
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 14px;
-  padding: 14px 16px;
-  color: var(--text); font-family: 'Tajawal', sans-serif;
-  font-size: 14px; resize: none; height: 76px;
-  outline: none; transition: border-color 0.2s;
-  margin-bottom: 14px;
-}
-.activity-input:focus { border-color: var(--accent); }
-.activity-input::placeholder { color: var(--muted2); }
+.ainput:focus { border-color:var(--accent); }
+.ainput::placeholder { color:var(--muted2); }
 
 /* ── TOAST ── */
 .toast {
-  position: fixed; bottom: calc(var(--safe-bot) + 90px);
-  left: 50%; transform: translateX(-50%);
-  background: #1a2535;
-  border: 1px solid var(--border2);
-  color: var(--text); padding: 12px 22px;
-  border-radius: 22px; font-size: 14px; font-weight: 500;
-  z-index: 999; white-space: nowrap;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  position:fixed; bottom:calc(var(--safe-bot)+90px);
+  left:50%; transform:translateX(-50%);
+  background:#1a2535; border:1px solid var(--border2);
+  color:var(--text); padding:12px 22px; border-radius:22px;
+  font-size:14px; font-weight:500; z-index:999; white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  animation:tin .3s cubic-bezier(.34,1.56,.64,1);
 }
-@keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(10px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
+/* ── NOTIF STATUS CARD ── */
+.notif-status {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; padding:16px; margin-bottom:14px;
+}
+.ns-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.ns-row:last-child { border-bottom:none; }
+.ns-icon { font-size:18px; }
+.ns-text { flex:1; font-size:13px; }
+.ns-badge {
+  font-size:11px; font-weight:700; padding:3px 10px; border-radius:10px;
+}
+.ns-badge.ok  { background:rgba(0,229,160,.15); color:var(--mint); }
+.ns-badge.bad { background:rgba(255,79,123,.15); color:var(--rose); }
+.ns-badge.warn{ background:rgba(245,200,66,.15); color:var(--act-c); }
 </style>
 </head>
 <body>
 
-<div class="stars"></div>
-<div class="ambient"></div>
-
 <div class="app">
-
   <!-- HEADER -->
   <div class="header">
     <div class="brand">
@@ -625,757 +392,640 @@ input[type=range]::-webkit-slider-thumb {
         <div class="brand-sub">SLEEP TRACKER</div>
       </div>
     </div>
-    <div class="header-badge">
-      <div class="pulse-dot" id="activeDot"></div>
-      <span id="headerStatus">متوقف</span>
+    <div class="hbadge">
+      <div class="dot" id="activeDot"></div>
+      <span id="hStatus">متوقف</span>
     </div>
   </div>
 
   <!-- NAV -->
   <nav class="nav">
-    <button class="nav-btn active" onclick="goPage('home',this)">الرئيسية</button>
-    <button class="nav-btn"        onclick="goPage('settings',this)">الإعدادات</button>
-    <button class="nav-btn"        onclick="goPage('log',this)">السجل</button>
+    <button class="nb act" onclick="goPage('home',this)">الرئيسية</button>
+    <button class="nb"     onclick="goPage('settings',this)">الإعدادات</button>
+    <button class="nb"     onclick="goPage('log',this)">السجل</button>
   </nav>
 
   <div class="pages">
 
     <!-- ══ HOME ══ -->
-    <div class="page active" id="page-home">
+    <div class="page act" id="page-home">
 
+      <!-- Permission Banner -->
       <div id="permBanner" class="perm-banner" onclick="askPermission()" style="display:none">
-        <div class="perm-icon">🔔</div>
-        <div class="perm-body">
-          <div class="perm-title">فعّل الإشعارات</div>
-          <div class="perm-desc">التطبيق يحتاج إذن الإشعارات عشان يصحّيك ويراقب نومك</div>
+        <div class="perm-icon">🔕</div>
+        <div>
+          <div class="perm-title">الإشعارات مش مفعّلة!</div>
+          <div class="perm-desc">اضغط هنا عشان تسمح للتطبيق يبعتلك إشعارات — ضروري عشان يشتغل صح</div>
         </div>
-        <div class="perm-arrow">←</div>
+        <span style="font-size:18px;color:var(--rose)">←</span>
       </div>
 
+      <!-- Notification Status -->
+      <div class="notif-status" id="notifStatus">
+        <div class="ns-row">
+          <div class="ns-icon">🔔</div>
+          <div class="ns-text">إذن الإشعارات</div>
+          <div class="ns-badge bad" id="nsBadge1">غير مفعّل</div>
+        </div>
+        <div class="ns-row">
+          <div class="ns-icon">⚙️</div>
+          <div class="ns-text">نوع الإشعارات</div>
+          <div class="ns-badge warn" id="nsBadge2">Web</div>
+        </div>
+        <div class="ns-row">
+          <div class="ns-icon">📱</div>
+          <div class="ns-text">Capacitor Native</div>
+          <div class="ns-badge warn" id="nsBadge3">غير متاح</div>
+        </div>
+      </div>
+
+      <!-- Clock -->
       <div class="clock-card">
-        <div class="clock-label">الوقت الحالي</div>
-        <div class="clock-time" id="clockTime">--:--</div>
-        <div class="clock-date" id="clockDate">—</div>
-
+        <div class="clk-lbl">الوقت الحالي</div>
+        <div class="clk-time" id="clockTime">--:--</div>
+        <div class="clk-date" id="clockDate">—</div>
         <div class="state-pill awake" id="statePill">
-          <span>🟢</span> <span id="stateText">صاحي</span>
+          <span id="stateEmoji">🟢</span>&nbsp;<span id="stateText">صاحي</span>
         </div>
-
-        <div class="progress-wrap" id="progressWrap">
-          <div class="progress-track">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-          <div class="progress-text" id="progressText">⏳ انتظار الرد...</div>
+        <div class="prog-wrap" id="progWrap">
+          <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+          <div class="prog-text" id="progText">⏳ انتظار الرد...</div>
         </div>
       </div>
 
+      <!-- Stats -->
       <div class="stats-row">
-        <div class="stat-box">
-          <div class="stat-num" id="sToday">0</div>
-          <div class="stat-lbl">اليوم</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num" id="sLast">—</div>
-          <div class="stat-lbl">آخر نوم</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num" id="sTotal">0</div>
-          <div class="stat-lbl">إجمالي</div>
-        </div>
+        <div class="stat-box"><div class="stat-num" id="sToday">0</div><div class="stat-lbl">اليوم</div></div>
+        <div class="stat-box"><div class="stat-num" id="sLast">—</div><div class="stat-lbl">آخر نوم</div></div>
+        <div class="stat-box"><div class="stat-num" id="sTotal">0</div><div class="stat-lbl">إجمالي</div></div>
       </div>
 
-      <div class="action-card">
-        <div class="section-label">⚡ تحكم يدوي</div>
-        <button class="btn-main" onclick="triggerCheckIn()">🔔 ابعت إشعار الآن</button>
+      <!-- Actions -->
+      <div class="acard">
+        <div class="slbl">⚡ تحكم يدوي</div>
+        <button class="btn-main" onclick="triggerCheck()">🔔 ابعت إشعار الآن</button>
         <button class="btn-ghost" onclick="manualSleep()">😴 سجّل نايم دلوقتي</button>
       </div>
 
-    </div><!-- end home -->
+    </div>
 
     <!-- ══ SETTINGS ══ -->
     <div class="page" id="page-settings">
 
       <div class="settings-section">
-        <div class="section-label">🕐 فترة المراقبة</div>
-        <div class="input-group">
-          <div class="input-row">
-            <div class="input-icon">🌙</div>
-            <div class="input-info">
-              <div class="input-label">من الساعة</div>
-              <div class="input-desc">بداية فترة المتابعة</div>
-            </div>
-            <input type="time" class="time-input" id="startTime" value="23:30"/>
+        <div class="slbl">🕐 فترة المراقبة</div>
+        <div class="igroup">
+          <div class="irow">
+            <div class="iicon">🌙</div>
+            <div class="iinfo"><div class="ilbl">من الساعة</div><div class="idesc">بداية فترة المراقبة</div></div>
+            <input type="time" class="tinput" id="startTime" value="23:30"/>
           </div>
-          <div class="input-row">
-            <div class="input-icon">🌅</div>
-            <div class="input-info">
-              <div class="input-label">لحد الساعة</div>
-              <div class="input-desc">نهاية فترة المتابعة</div>
-            </div>
-            <input type="time" class="time-input" id="endTime" value="03:00"/>
+          <div class="irow">
+            <div class="iicon">🌅</div>
+            <div class="iinfo"><div class="ilbl">لحد الساعة</div><div class="idesc">نهاية فترة المراقبة</div></div>
+            <input type="time" class="tinput" id="endTime" value="03:00"/>
           </div>
         </div>
       </div>
 
       <div class="settings-section">
-        <div class="section-label">⏱️ وقت الانتظار</div>
-        <div class="input-group">
-          <div class="input-row">
-            <div class="input-icon">⏳</div>
-            <div class="input-info">
-              <div class="input-label">دقايق قبل تسجيل "نام"</div>
-              <div class="input-desc">لو ما ردتش → يتسجل تلقائياً</div>
-            </div>
-            <div class="range-wrap">
+        <div class="slbl">⏱️ التوقيتات</div>
+        <div class="igroup">
+          <div class="irow">
+            <div class="iicon">⏳</div>
+            <div class="iinfo"><div class="ilbl">وقت الانتظار</div><div class="idesc">ثم يُسجَّل "نام" تلقائياً</div></div>
+            <div class="rwrap">
               <input type="range" id="waitMins" min="3" max="30" value="10"
                 oninput="document.getElementById('waitVal').textContent=this.value+'د'"/>
-              <div class="range-val" id="waitVal">10د</div>
+              <div class="rval" id="waitVal">10د</div>
             </div>
           </div>
-          <div class="input-row">
-            <div class="input-icon">🔁</div>
-            <div class="input-info">
-              <div class="input-label">تكرار السؤال</div>
-              <div class="input-desc">الفترة بين كل سؤال وتاني</div>
-            </div>
-            <div class="range-wrap">
+          <div class="irow">
+            <div class="iicon">🔁</div>
+            <div class="iinfo"><div class="ilbl">الفترة بين الأسئلة</div><div class="idesc">كل كام دقيقة يسأل</div></div>
+            <div class="rwrap">
               <input type="range" id="intervalMins" min="15" max="60" value="30" step="5"
                 oninput="document.getElementById('intervalVal').textContent=this.value+'د'"/>
-              <div class="range-val" id="intervalVal">30د</div>
+              <div class="rval" id="intervalVal">30د</div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="settings-section">
-        <div class="section-label">🎛️ خيارات</div>
-        <div class="input-group">
-          <div class="input-row">
-            <div class="input-icon">⚡</div>
-            <div class="input-info">
-              <div class="input-label">تشغيل تلقائي</div>
-              <div class="input-desc">يبدأ المراقبة تلقائياً</div>
-            </div>
-            <button class="toggle-switch on" id="tAuto" onclick="flipToggle('tAuto','cfgAuto')"></button>
+        <div class="slbl">🎛️ خيارات</div>
+        <div class="igroup">
+          <div class="irow">
+            <div class="iicon">⚡</div>
+            <div class="iinfo"><div class="ilbl">تشغيل تلقائي</div><div class="idesc">يبدأ المراقبة تلقائياً</div></div>
+            <button class="tog on" id="tAuto" onclick="flipTog('tAuto','cfgAuto')"></button>
           </div>
-          <div class="input-row">
-            <div class="input-icon">📳</div>
-            <div class="input-info">
-              <div class="input-label">اهتزاز</div>
-              <div class="input-desc">يهتز عند الإشعار</div>
-            </div>
-            <button class="toggle-switch on" id="tVib" onclick="flipToggle('tVib','cfgVib')"></button>
+          <div class="irow">
+            <div class="iicon">📳</div>
+            <div class="iinfo"><div class="ilbl">اهتزاز</div><div class="idesc">يهتز مع الإشعار</div></div>
+            <button class="tog on" id="tVib"  onclick="flipTog('tVib','cfgVib')"></button>
           </div>
-          <div class="input-row">
-            <div class="input-icon">🔊</div>
-            <div class="input-info">
-              <div class="input-label">صوت تنبيه</div>
-              <div class="input-desc">ينبّه بصوت مع الإشعار</div>
-            </div>
-            <button class="toggle-switch" id="tSound" onclick="flipToggle('tSound','cfgSound')"></button>
+          <div class="irow">
+            <div class="iicon">🔊</div>
+            <div class="iinfo"><div class="ilbl">صوت تنبيه</div><div class="idesc">نغمة مع الإشعار</div></div>
+            <button class="tog" id="tSound" onclick="flipTog('tSound','cfgSound')"></button>
           </div>
         </div>
       </div>
 
       <button class="save-btn" onclick="saveAndStart()">✅ حفظ وتفعيل المراقبة</button>
 
-    </div><!-- end settings -->
+    </div>
 
     <!-- ══ LOG ══ -->
     <div class="page" id="page-log">
-
-      <div class="log-toolbar">
-        <div class="log-count" id="logCount">0 سجل</div>
-        <div class="log-actions">
-          <button class="icon-btn" onclick="copyLog()">📋 نسخ</button>
-          <button class="icon-btn danger" onclick="clearLog()">🗑 مسح</button>
+      <div class="log-bar">
+        <div class="log-cnt" id="logCnt">0 سجل</div>
+        <div class="log-acts">
+          <button class="ibtn" onclick="copyLog()">📋 نسخ</button>
+          <button class="ibtn danger" onclick="clearLog()">🗑 مسح</button>
         </div>
       </div>
-
-      <div class="export-box" id="exportBox"></div>
-
+      <div class="expbox" id="expBox"></div>
       <div id="logList">
         <div class="log-empty">
-          <div class="log-empty-emoji">📭</div>
-          <div class="log-empty-title">السجل فاضي لسه</div>
-          <div class="log-empty-sub">فعّل المراقبة من الإعدادات وهتشوف بياناتك هنا</div>
+          <div class="le-emoji">📭</div>
+          <div class="le-title">السجل فاضي لسه</div>
+          <div class="le-sub">فعّل المراقبة وهتشوف بياناتك هنا</div>
         </div>
       </div>
+    </div>
 
-    </div><!-- end log -->
+  </div><!-- pages -->
+</div><!-- app -->
 
-  </div><!-- end pages -->
-</div><!-- end app -->
-
-<!-- CHECK-IN SHEET -->
+<!-- MODAL SHEET -->
 <div class="overlay" id="overlay">
   <div class="sheet">
-    <div class="sheet-title">🌙 بتعمل إيه دلوقتي؟</div>
-    <div class="sheet-sub" id="sheetTime">—</div>
-    <div class="sheet-timer" id="sheetTimer">⏳ باقي <span id="timerNum">10</span> دقيقة</div>
-
-    <div class="response-btns">
-      <div class="resp-btn btn-sleep" onclick="respond('sleep')">
-        <div class="resp-emoji">😴</div>
-        <div class="resp-label">نايم</div>
-        <div class="resp-sub">سجّل وقت النوم</div>
+    <div class="sh-title">🌙 بتعمل إيه دلوقتي؟</div>
+    <div class="sh-sub" id="shTime">—</div>
+    <div class="sh-timer">⏳ باقي <span id="timerNum">10</span> دقيقة</div>
+    <div class="resp-btns">
+      <div class="rbtn rs" onclick="respond('sleep')">
+        <div class="remi">😴</div>
+        <div class="rlbl">نايم</div>
+        <div class="rsub">سجّل وقت النوم</div>
       </div>
-      <div class="resp-btn btn-awake" onclick="showActivity()">
-        <div class="resp-emoji">✍️</div>
-        <div class="resp-label">صاحي</div>
-        <div class="resp-sub">أقول بعمل إيه</div>
+      <div class="rbtn ra" onclick="showActivity()">
+        <div class="remi">✍️</div>
+        <div class="rlbl">صاحي</div>
+        <div class="rsub">أقول بعمل إيه</div>
       </div>
     </div>
-
-    <div class="activity-panel" id="actPanel">
-      <div class="tags-row" id="tagsRow">
-        <div class="tag" onclick="pickTag(this,'💻 بشتغل')">💻 بشتغل</div>
-        <div class="tag" onclick="pickTag(this,'📚 بذاكر')">📚 بذاكر</div>
-        <div class="tag" onclick="pickTag(this,'📺 بتفرج')">📺 بتفرج</div>
-        <div class="tag" onclick="pickTag(this,'📖 بقرا')">📖 بقرا</div>
-        <div class="tag" onclick="pickTag(this,'📱 على الموبايل')">📱 على الموبايل</div>
-        <div class="tag" onclick="pickTag(this,'🎮 بلعب')">🎮 بلعب</div>
-        <div class="tag" onclick="pickTag(this,'🍽️ باكل')">🍽️ باكل</div>
+    <div class="apanel" id="actPanel">
+      <div class="tags-row">
+        <div class="tag" onclick="pickTag(this)">💻 بشتغل</div>
+        <div class="tag" onclick="pickTag(this)">📚 بذاكر</div>
+        <div class="tag" onclick="pickTag(this)">📺 بتفرج</div>
+        <div class="tag" onclick="pickTag(this)">📖 بقرا</div>
+        <div class="tag" onclick="pickTag(this)">📱 على الموبايل</div>
+        <div class="tag" onclick="pickTag(this)">🎮 بلعب</div>
+        <div class="tag" onclick="pickTag(this)">🍽️ باكل</div>
       </div>
-      <textarea class="activity-input" id="actInput" placeholder="أو اكتب حاجة تانية..."></textarea>
+      <textarea class="ainput" id="actInput" placeholder="أو اكتب حاجة تانية..."></textarea>
       <button class="btn-main" onclick="respond('activity')">✅ تسجيل وسيبني</button>
     </div>
-
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-//  CONFIG & STATE
-// ═══════════════════════════════════════════
-const CFG_KEY = 'nt_cfg';
-const LOG_KEY = 'nt_log';
+// ═══════════════════════════════════════════════════════════
+//  CAPACITOR DETECTION
+// ═══════════════════════════════════════════════════════════
+const isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform
+                       && window.Capacitor.isNativePlatform());
 
+// ── Capacitor plugins (مكتبات بيجيبها الـ APK) ──────────────
+let LocalNotifications = null;
+let CapApp = null;
+
+async function initCapacitor() {
+  if (!isCapacitor) return;
+  try {
+    // Dynamic import - موجودة لما التطبيق يشتغل كـ APK
+    const core = window.Capacitor.Plugins;
+    LocalNotifications = core.LocalNotifications;
+    CapApp             = core.App;
+    console.log('Capacitor plugins loaded');
+  } catch(e) { console.warn('Capacitor init:', e); }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  STATE & CONFIG
+// ═══════════════════════════════════════════════════════════
 let cfg = {
-  startTime:    '23:30',
-  endTime:      '03:00',
-  waitMins:     10,
-  intervalMins: 30,
-  cfgAuto:      true,
-  cfgVib:       true,
-  cfgSound:     false
+  startTime:'23:30', endTime:'03:00',
+  waitMins:10, intervalMins:30,
+  cfgAuto:true, cfgVib:true, cfgSound:false
+};
+let log = [];
+let S = {
+  running:false, awake:true,
+  cdTimer:null, schTimer:null,
+  checkAt:null, cdSecs:0,
+  notifId: 1
 };
 
-let log   = [];
-let state = {
-  running:       false,
-  awake:         true,
-  checkTimer:    null,   // auto sleep countdown
-  countdownTimer:null,   // UI countdown
-  scheduleTimer: null,   // recurring scheduler
-  checkStarted:  null,   // Date when check began
-  countdownSecs: 0
-};
-
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 //  BOOT
-// ═══════════════════════════════════════════
-function boot() {
-  loadCfg();
-  loadLog();
+// ═══════════════════════════════════════════════════════════
+async function boot() {
+  loadCfg(); loadLog();
   startClock();
-  checkPermission();
-  renderLog();
-  renderStats();
-  applySettingsUI();
-  registerSW();
+  await initCapacitor();
+  await checkPermission();
+  updateNotifStatusUI();
+  renderLog(); renderStats(); applySettingsUI();
   if (cfg.cfgAuto) startTracker();
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 //  PERSIST
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 function loadCfg() {
-  try { const s = localStorage.getItem(CFG_KEY); if (s) cfg = {...cfg, ...JSON.parse(s)}; } catch(e){}
+  try { const s=localStorage.getItem('nt_cfg'); if(s) cfg={...cfg,...JSON.parse(s)}; } catch(e){}
 }
-function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch(e){} }
-
+function saveCfg() { try { localStorage.setItem('nt_cfg',JSON.stringify(cfg)); } catch(e){} }
 function loadLog() {
-  try { const s = localStorage.getItem(LOG_KEY); if (s) log = JSON.parse(s); } catch(e){}
+  try { const s=localStorage.getItem('nt_log'); if(s) log=JSON.parse(s); } catch(e){}
 }
-function saveLog() { try { localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(0,1000))); } catch(e){} }
+function saveLog() { try { localStorage.setItem('nt_log',JSON.stringify(log.slice(0,1000))); } catch(e){} }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 //  CLOCK
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 function startClock() {
   const tick = () => {
-    const n   = new Date();
-    const hh  = String(n.getHours()).padStart(2,'0');
-    const mm  = String(n.getMinutes()).padStart(2,'0');
-    document.getElementById('clockTime').textContent = `${hh}:${mm}`;
-    const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-    const mons = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-    document.getElementById('clockDate').textContent = `${days[n.getDay()]} ${n.getDate()} ${mons[n.getMonth()]}`;
+    const n=new Date();
+    document.getElementById('clockTime').textContent =
+      String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+    const D=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    const M=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    document.getElementById('clockDate').textContent = D[n.getDay()]+' '+n.getDate()+' '+M[n.getMonth()];
   };
-  tick();
-  setInterval(tick, 1000);
+  tick(); setInterval(tick,1000);
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 //  NAVIGATION
-// ═══════════════════════════════════════════
-function goPage(id, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  btn.classList.add('active');
+// ═══════════════════════════════════════════════════════════
+function goPage(id,btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('act'));
+  document.getElementById('page-'+id).classList.add('act');
+  btn.classList.add('act');
 }
 
-// ═══════════════════════════════════════════
-//  NOTIFICATIONS & PERMISSIONS
-// ═══════════════════════════════════════════
-function checkPermission() {
-  if (!('Notification' in window) || Notification.permission === 'granted') {
-    document.getElementById('permBanner').style.display = 'none';
+// ═══════════════════════════════════════════════════════════
+//  NOTIFICATION PERMISSION & DISPATCH
+// ═══════════════════════════════════════════════════════════
+async function checkPermission() {
+  if (isCapacitor && LocalNotifications) {
+    // Native Capacitor
+    try {
+      const { display } = await LocalNotifications.checkPermissions();
+      if (display !== 'granted') {
+        document.getElementById('permBanner').style.display = 'flex';
+      }
+    } catch(e){}
   } else {
-    document.getElementById('permBanner').style.display = 'flex';
+    // Web fallback
+    if (!('Notification' in window) || Notification.permission !== 'granted') {
+      document.getElementById('permBanner').style.display = 'flex';
+    }
   }
 }
 
 async function askPermission() {
-  if (!('Notification' in window)) {
-    toast('❌ متصفحك مش بيدعم الإشعارات');
-    return;
-  }
-  const result = await Notification.requestPermission();
-  if (result === 'granted') {
-    document.getElementById('permBanner').style.display = 'none';
-    toast('✅ تم تفعيل الإشعارات بنجاح!');
-    // Test notification
-    setTimeout(() => fireNotif('🌙 مراقب النوم', 'تم تفعيل الإشعارات ✅ التطبيق شغال صح'), 500);
+  if (isCapacitor && LocalNotifications) {
+    // طلب الإذن Native
+    try {
+      const res = await LocalNotifications.requestPermissions();
+      if (res.display === 'granted') {
+        document.getElementById('permBanner').style.display = 'none';
+        updateNotifStatusUI();
+        toast('✅ تم تفعيل الإشعارات النظام!');
+        testNotif();
+      } else {
+        toast('⚠️ افتح إعدادات الموبايل وفعّل الإشعارات يدوياً');
+      }
+    } catch(e) { toast('خطأ في طلب الإذن: '+e.message); }
   } else {
-    toast('⚠️ مش قادر يبعت إشعارات — ادخل إعدادات الموبايل وفعّله يدوياً');
+    // Web fallback
+    if (!('Notification' in window)) { toast('المتصفح ده مش بيدعم الإشعارات'); return; }
+    const r = await Notification.requestPermission();
+    if (r === 'granted') {
+      document.getElementById('permBanner').style.display = 'none';
+      updateNotifStatusUI();
+      toast('✅ تم تفعيل الإشعارات');
+    } else {
+      toast('⚠️ الإذن مرفوض — فعّله من الإعدادات');
+    }
   }
 }
 
-function fireNotif(title, body) {
-  if (Notification.permission !== 'granted') return;
-  try {
-    const n = new Notification(title, {
-      body,
-      icon:             'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text y="52" font-size="52">🌙</text></svg>',
-      requireInteraction: true,
-      tag:              'sleep-check',
-      renotify:         true,
-      silent:           false,
-      vibrate:          cfg.cfgVib ? [200,100,300,100,200] : []
-    });
-    n.onclick = () => { window.focus(); n.close(); openSheet(); };
-  } catch(e) { console.warn('Notif failed:', e); }
+function updateNotifStatusUI() {
+  // Badge 1: إذن الإشعارات
+  const b1 = document.getElementById('nsBadge1');
+  const webGranted = ('Notification' in window) && Notification.permission === 'granted';
+  b1.textContent = webGranted ? 'مفعّل ✅' : 'غير مفعّل ❌';
+  b1.className   = 'ns-badge ' + (webGranted ? 'ok' : 'bad');
+
+  // Badge 2: نوع الإشعارات
+  const b2 = document.getElementById('nsBadge2');
+  b2.textContent = isCapacitor ? 'Native ✅' : 'Web ⚠️';
+  b2.className   = 'ns-badge ' + (isCapacitor ? 'ok' : 'warn');
+
+  // Badge 3: Capacitor
+  const b3 = document.getElementById('nsBadge3');
+  b3.textContent = (isCapacitor && LocalNotifications) ? 'متاح ✅' : 'يحتاج APK ⚠️';
+  b3.className   = 'ns-badge ' + ((isCapacitor && LocalNotifications) ? 'ok' : 'warn');
+}
+
+// ── الإرسال الفعلي ────────────────────────────────────────
+async function fireNotif(title, body) {
+  if (isCapacitor && LocalNotifications) {
+    // ══ Native Android Notification (APK) ══
+    try {
+      await LocalNotifications.schedule({
+        notifications: [{
+          id:                 S.notifId++,
+          title,
+          body,
+          channelId:          'sleep-tracker',
+          schedule:           { at: new Date(Date.now() + 500) },
+          sound:              cfg.cfgSound ? 'beep.wav' : null,
+          actionTypeId:       'SLEEP_CHECK',
+          extra:              { type: 'checkin' },
+          ongoing:            false,
+          autoCancel:         true,
+          largeIcon:          'ic_launcher',
+          smallIcon:          'ic_stat_moon',
+          iconColor:          '#00d4ff',
+          group:              'sleep',
+          groupSummary:       false,
+          summaryText:        'مراقب النوم',
+          number:             1,
+          attachments:        null,
+          importance:         5,   // IMPORTANCE_HIGH
+          visibility:         1,   // VISIBILITY_PUBLIC
+        }]
+      });
+    } catch(e) { console.warn('Native notif failed:', e); webNotif(title, body); }
+
+  } else {
+    // ══ Web Notification (fallback) ══
+    webNotif(title, body);
+  }
 
   if (cfg.cfgVib && navigator.vibrate) navigator.vibrate([200,100,300,100,200]);
   if (cfg.cfgSound) playBeep();
 }
 
-function playBeep() {
+function webNotif(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    [0, 0.25, 0.5].forEach(delay => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.frequency.value = 880;
-      o.type = 'sine';
-      g.gain.setValueAtTime(0.4, ctx.currentTime + delay);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.2);
-      o.start(ctx.currentTime + delay);
-      o.stop(ctx.currentTime + delay + 0.2);
+    const n = new Notification(title, {
+      body, requireInteraction:true, tag:'sleep-check', renotify:true,
+      icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text y="52" font-size="52">🌙</text></svg>'
     });
+    n.onclick = () => { window.focus(); n.close(); openSheet(); };
   } catch(e){}
 }
 
-// ═══════════════════════════════════════════
+function testNotif() {
+  fireNotif('🌙 مراقب النوم', '✅ الإشعارات شغالة — التطبيق جاهز!');
+}
+
+function playBeep() {
+  try {
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,.25,.5].forEach(d=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=880;o.type='sine';
+      g.gain.setValueAtTime(.4,ctx.currentTime+d);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d+.2);
+      o.start(ctx.currentTime+d);o.stop(ctx.currentTime+d+.2);
+    });
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════
 //  SCHEDULER
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 function startTracker() {
-  if (state.scheduleTimer) clearInterval(state.scheduleTimer);
-  state.running = true;
-  setHeaderStatus(true);
-
-  // Check every 60s
-  state.scheduleTimer = setInterval(() => {
-    if (!inTimeRange()) return;
-    const n    = new Date();
-    const mins = n.getMinutes();
-    const interval = cfg.intervalMins;
-    // Fire at multiples of interval
-    if (mins % interval === 0) triggerCheckIn();
+  if (S.schTimer) clearInterval(S.schTimer);
+  S.running = true;
+  document.getElementById('activeDot').classList.add('on');
+  document.getElementById('hStatus').textContent = 'نشط';
+  S.schTimer = setInterval(() => {
+    if (!inRange()) return;
+    const m = new Date().getMinutes();
+    if (m % cfg.intervalMins === 0) triggerCheck();
   }, 60000);
-
   toast('✅ المراقبة شغالة');
 }
 
 function stopTracker() {
-  if (state.scheduleTimer) clearInterval(state.scheduleTimer);
-  clearAllTimers();
-  state.running = false;
-  setHeaderStatus(false);
+  if (S.schTimer) clearInterval(S.schTimer);
+  clearTimers();
+  S.running = false;
+  document.getElementById('activeDot').classList.remove('on');
+  document.getElementById('hStatus').textContent = 'متوقف';
 }
 
-function setHeaderStatus(on) {
-  document.getElementById('headerStatus').textContent = on ? 'نشط' : 'متوقف';
-  const dot = document.getElementById('activeDot');
-  dot.classList.toggle('active', on);
+function inRange() {
+  const n=new Date(), nm=n.getHours()*60+n.getMinutes();
+  const [sh,sm]=cfg.startTime.split(':').map(Number);
+  const [eh,em]=cfg.endTime.split(':').map(Number);
+  const s=sh*60+sm, e=eh*60+em;
+  return s>e ? (nm>=s||nm<=e) : (nm>=s&&nm<=e);
 }
 
-function inTimeRange() {
-  const n  = new Date();
-  const nm = n.getHours() * 60 + n.getMinutes();
-  const [sh, sm] = cfg.startTime.split(':').map(Number);
-  const [eh, em] = cfg.endTime.split(':').map(Number);
-  const s = sh * 60 + sm, e = eh * 60 + em;
-  return s > e ? (nm >= s || nm <= e) : (nm >= s && nm <= e);
-}
-
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 //  CHECK-IN FLOW
-// ═══════════════════════════════════════════
-function triggerCheckIn() {
-  state.checkStarted = new Date();
-  fireNotif('🌙 إنت بتعمل إيه دلوقتي؟', `رد خلال ${cfg.waitMins} دقيقة وإلا هيتسجل نام تلقائياً`);
+// ═══════════════════════════════════════════════════════════
+async function triggerCheck() {
+  S.checkAt = new Date();
+  await fireNotif('🌙 إنت بتعمل إيه دلوقتي؟', `رد خلال ${cfg.waitMins} دقيقة وإلا هيتسجل "نام" تلقائياً`);
   openSheet();
   startCountdown();
-  updateStats();
+  renderStats();
 }
 
 function openSheet() {
-  const n = new Date();
-  document.getElementById('sheetTime').textContent =
-    'الساعة ' + n.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit', hour12:true});
+  const n=new Date();
+  document.getElementById('shTime').textContent =
+    'الساعة '+n.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit',hour12:true});
   document.getElementById('timerNum').textContent = cfg.waitMins;
   document.getElementById('actPanel').classList.remove('show');
   document.getElementById('actInput').value = '';
-  document.querySelectorAll('.tag').forEach(t => t.classList.remove('sel'));
+  document.querySelectorAll('.tag').forEach(t=>t.classList.remove('sel'));
   document.getElementById('overlay').classList.add('show');
 }
 
-function closeSheet() {
-  document.getElementById('overlay').classList.remove('show');
-}
+function closeSheet() { document.getElementById('overlay').classList.remove('show'); }
 
 function startCountdown() {
-  clearAllTimers();
-  state.countdownSecs = cfg.waitMins * 60;
+  clearTimers();
+  S.cdSecs = cfg.waitMins * 60;
+  const wrap=document.getElementById('progWrap'),
+        fill=document.getElementById('progFill'),
+        text=document.getElementById('progText');
+  wrap.classList.add('show'); fill.style.width='100%';
 
-  const wrap = document.getElementById('progressWrap');
-  const fill = document.getElementById('progressFill');
-  const text = document.getElementById('progressText');
-  wrap.classList.add('show');
-  fill.style.width = '100%';
-
-  state.countdownTimer = setInterval(() => {
-    state.countdownSecs--;
-    const rem  = Math.max(0, Math.ceil(state.countdownSecs / 60));
-    const pct  = (state.countdownSecs / (cfg.waitMins * 60)) * 100;
-
+  S.cdTimer = setInterval(() => {
+    S.cdSecs--;
+    const rem=Math.max(0,Math.ceil(S.cdSecs/60));
+    const pct=(S.cdSecs/(cfg.waitMins*60))*100;
     document.getElementById('timerNum').textContent = rem;
-    fill.style.width = pct + '%';
-    text.textContent = `⏳ باقي ${rem} دقيقة — سيُسجَّل نام تلقائياً لو ما ردتش`;
-
-    if (state.countdownSecs <= 0) {
-      clearAllTimers();
-      wrap.classList.remove('show');
-      autoSleep();
-    }
+    fill.style.width = pct+'%';
+    text.textContent = `⏳ باقي ${rem} دقيقة — سيُسجَّل نام تلقائياً`;
+    if (S.cdSecs<=0) { clearTimers(); wrap.classList.remove('show'); autoSleep(); }
   }, 1000);
 }
 
-function clearAllTimers() {
-  if (state.countdownTimer) clearInterval(state.countdownTimer);
-  if (state.checkTimer) clearTimeout(state.checkTimer);
-  state.countdownTimer = null;
-  state.checkTimer = null;
+function clearTimers() {
+  if(S.cdTimer) clearInterval(S.cdTimer);
+  if(S.schTimer2) clearTimeout(S.schTimer2);
+  S.cdTimer=null; S.schTimer2=null;
 }
 
 function autoSleep() {
   closeSheet();
-  addEntry('auto', 'نام تلقائياً (ما ردش)', state.checkStarted || new Date());
-  setStatePill('asleep');
+  addEntry('auto','نام تلقائياً (ما ردش)',S.checkAt||new Date());
+  setPill('asleep');
   toast('😴 تم تسجيل النوم تلقائياً');
 }
 
 function respond(type) {
-  clearAllTimers();
-  document.getElementById('progressWrap').classList.remove('show');
+  clearTimers();
+  document.getElementById('progWrap').classList.remove('show');
 
-  if (type === 'sleep') {
-    addEntry('sleep', 'نام', new Date());
-    setStatePill('asleep');
-    closeSheet();
+  if (type==='sleep') {
+    addEntry('sleep','نام',new Date());
+    setPill('asleep'); closeSheet();
     toast('😴 تم تسجيل النوم');
-
-  } else { // activity
-    const tags = [...document.querySelectorAll('.tag.sel')].map(t => t.textContent.trim());
-    const text = document.getElementById('actInput').value.trim();
-    const activity = text || tags.join(' + ') || 'نشاط غير محدد';
-
-    addEntry('activity', activity, new Date());
-    setStatePill('awake');
-    closeSheet();
+  } else {
+    const tags=[...document.querySelectorAll('.tag.sel')].map(t=>t.textContent.trim());
+    const txt=document.getElementById('actInput').value.trim();
+    const act=txt||tags.join(' + ')||'نشاط غير محدد';
+    addEntry('activity',act,new Date());
+    setPill('awake'); closeSheet();
     toast('✅ تم التسجيل!');
-
-    // Schedule next check after interval
-    if (state.running) {
-      state.checkTimer = setTimeout(() => {
-        if (inTimeRange() && state.running) triggerCheckIn();
-      }, cfg.intervalMins * 60 * 1000);
-    }
+    if(S.running) S.schTimer2=setTimeout(()=>{if(inRange()&&S.running)triggerCheck();},cfg.intervalMins*60*1000);
   }
 }
 
-function showActivity() {
-  document.getElementById('actPanel').classList.add('show');
-}
+function showActivity() { document.getElementById('actPanel').classList.add('show'); }
+function pickTag(el) { el.classList.toggle('sel'); }
 
-function pickTag(el, text) {
-  el.classList.toggle('sel');
-}
-
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 //  LOG
-// ═══════════════════════════════════════════
-function addEntry(type, text, time) {
-  log.unshift({ type, text, time: time.toISOString() });
-  saveLog();
-  renderLog();
-  renderStats();
+// ═══════════════════════════════════════════════════════════
+function addEntry(type,text,time) {
+  log.unshift({type,text,time:time.toISOString()});
+  saveLog(); renderLog(); renderStats();
 }
 
 function renderLog() {
-  const list = document.getElementById('logList');
-  document.getElementById('logCount').textContent = log.length + ' سجل';
-
-  if (log.length === 0) {
-    list.innerHTML = `
-      <div class="log-empty">
-        <div class="log-empty-emoji">📭</div>
-        <div class="log-empty-title">السجل فاضي لسه</div>
-        <div class="log-empty-sub">فعّل المراقبة وهتشوف بياناتك هنا</div>
-      </div>`;
+  const list=document.getElementById('logList');
+  document.getElementById('logCnt').textContent=log.length+' سجل';
+  if(!log.length){
+    list.innerHTML=`<div class="log-empty"><div class="le-emoji">📭</div><div class="le-title">السجل فاضي لسه</div><div class="le-sub">فعّل المراقبة وهتشوف بياناتك هنا</div></div>`;
     return;
   }
-
-  const icons  = { sleep:'😴', activity:'✍️', auto:'💤' };
-  const labels = { sleep:'نام',  activity:'نشاط',    auto:'نام تلقائياً' };
-
-  list.innerHTML = log.map(e => {
-    const d   = new Date(e.time);
-    const str = d.toLocaleString('ar-EG', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:true });
-    return `
-      <div class="log-entry">
-        <div class="entry-dot ${e.type}"></div>
-        <div class="entry-body">
-          <div class="entry-type ${e.type}">${icons[e.type]||'📝'} ${labels[e.type]||e.type}</div>
-          <div class="entry-text">${e.text}</div>
-          <div class="entry-time">${str}</div>
-        </div>
-      </div>`;
+  const ic={sleep:'😴',activity:'✍️',auto:'💤'};
+  const lb={sleep:'نام',activity:'نشاط',auto:'نام تلقائياً'};
+  list.innerHTML=log.map(e=>{
+    const d=new Date(e.time);
+    const s=d.toLocaleString('ar-EG',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+    return`<div class="lentry"><div class="edot ${e.type}"></div><div class="ebody"><div class="etype ${e.type}">${ic[e.type]||'📝'} ${lb[e.type]||e.type}</div><div class="etext">${e.text}</div><div class="etime">${s}</div></div></div>`;
   }).join('');
 }
 
 function renderStats() {
-  const today = new Date().toDateString();
-  document.getElementById('sToday').textContent =
-    log.filter(e => new Date(e.time).toDateString() === today).length;
-  document.getElementById('sTotal').textContent = log.length;
-  const ls = log.find(e => e.type === 'sleep' || e.type === 'auto');
-  if (ls) {
-    const d = new Date(ls.time);
-    document.getElementById('sLast').textContent =
-      d.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit',hour12:true});
-  }
+  const today=new Date().toDateString();
+  document.getElementById('sToday').textContent=log.filter(e=>new Date(e.time).toDateString()===today).length;
+  document.getElementById('sTotal').textContent=log.length;
+  const ls=log.find(e=>e.type==='sleep'||e.type==='auto');
+  if(ls) document.getElementById('sLast').textContent=
+    new Date(ls.time).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit',hour12:true});
 }
 
-function updateStats() { renderStats(); }
-
 function copyLog() {
-  if (!log.length) { toast('السجل فاضي!'); return; }
-  const txt = log.map(e => {
-    const d = new Date(e.time);
-    return `${d.toLocaleString('ar-EG')} | ${e.type}: ${e.text}`;
-  }).join('\n');
-
-  const box = document.getElementById('exportBox');
-  box.textContent = txt;
-  box.style.display = box.style.display === 'block' ? 'none' : 'block';
-
-  navigator.clipboard.writeText(txt).then(() => toast('📋 تم النسخ!')).catch(() => toast('افتح التصدير ونسخ يدوياً'));
+  if(!log.length){toast('السجل فاضي!');return;}
+  const txt=log.map(e=>`${new Date(e.time).toLocaleString('ar-EG')} | ${e.type}: ${e.text}`).join('\n');
+  const box=document.getElementById('expBox');
+  box.textContent=txt; box.style.display=box.style.display==='block'?'none':'block';
+  navigator.clipboard.writeText(txt).then(()=>toast('📋 تم النسخ!')).catch(()=>toast('افتح التصدير ونسخ يدوياً'));
 }
 
 function clearLog() {
-  if (!confirm('مسح كل السجل؟')) return;
-  log = []; saveLog(); renderLog(); renderStats();
-  toast('🗑 تم المسح');
+  if(!confirm('مسح كل السجل؟'))return;
+  log=[];saveLog();renderLog();renderStats();toast('🗑 تم المسح');
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 //  SETTINGS UI
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 function applySettingsUI() {
-  document.getElementById('startTime').value    = cfg.startTime;
-  document.getElementById('endTime').value      = cfg.endTime;
-  document.getElementById('waitMins').value     = cfg.waitMins;
-  document.getElementById('waitVal').textContent = cfg.waitMins + 'د';
-  document.getElementById('intervalMins').value = cfg.intervalMins;
-  document.getElementById('intervalVal').textContent = cfg.intervalMins + 'د';
-  setToggle('tAuto',  cfg.cfgAuto);
-  setToggle('tVib',   cfg.cfgVib);
-  setToggle('tSound', cfg.cfgSound);
+  document.getElementById('startTime').value=cfg.startTime;
+  document.getElementById('endTime').value=cfg.endTime;
+  document.getElementById('waitMins').value=cfg.waitMins;
+  document.getElementById('waitVal').textContent=cfg.waitMins+'د';
+  document.getElementById('intervalMins').value=cfg.intervalMins;
+  document.getElementById('intervalVal').textContent=cfg.intervalMins+'د';
+  setTog('tAuto',cfg.cfgAuto); setTog('tVib',cfg.cfgVib); setTog('tSound',cfg.cfgSound);
 }
-
-function setToggle(id, val) {
-  document.getElementById(id).classList.toggle('on', val);
-}
-
-function flipToggle(id, key) {
-  cfg[key] = !cfg[key];
-  setToggle(id, cfg[key]);
-}
-
+function setTog(id,v){document.getElementById(id).classList.toggle('on',v);}
+function flipTog(id,key){cfg[key]=!cfg[key];setTog(id,cfg[key]);}
 function saveAndStart() {
-  cfg.startTime    = document.getElementById('startTime').value;
-  cfg.endTime      = document.getElementById('endTime').value;
-  cfg.waitMins     = parseInt(document.getElementById('waitMins').value);
-  cfg.intervalMins = parseInt(document.getElementById('intervalMins').value);
+  cfg.startTime=document.getElementById('startTime').value;
+  cfg.endTime=document.getElementById('endTime').value;
+  cfg.waitMins=parseInt(document.getElementById('waitMins').value);
+  cfg.intervalMins=parseInt(document.getElementById('intervalMins').value);
   saveCfg();
-
-  if (cfg.cfgAuto) startTracker();
-  else stopTracker();
-
+  if(cfg.cfgAuto) startTracker(); else stopTracker();
   toast('✅ تم الحفظ والتفعيل!');
-  // Go to home
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-home').classList.add('active');
-  document.querySelectorAll('.nav-btn')[0].classList.add('active');
+  goPage('home',document.querySelectorAll('.nb')[0]);
 }
 
-// ═══════════════════════════════════════════
-//  MANUAL ACTIONS
-// ═══════════════════════════════════════════
-function manualSleep() {
-  addEntry('sleep', 'نام يدوياً', new Date());
-  setStatePill('asleep');
-  toast('😴 تم تسجيل النوم');
+function manualSleep(){addEntry('sleep','نام يدوياً',new Date());setPill('asleep');toast('😴 تم التسجيل');}
+
+function setPill(s){
+  const p=document.getElementById('statePill');
+  if(s==='asleep'){p.className='state-pill asleep';document.getElementById('stateEmoji').textContent='💤';document.getElementById('stateText').textContent='نايم';}
+  else{p.className='state-pill awake';document.getElementById('stateEmoji').textContent='🟢';document.getElementById('stateText').textContent='صاحي';}
 }
 
-function setStatePill(s) {
-  const pill = document.getElementById('statePill');
-  const txt  = document.getElementById('stateText');
-  if (s === 'asleep') {
-    pill.className = 'state-pill asleep';
-    pill.querySelector('span').textContent = '💤';
-    txt.textContent = 'نايم';
-  } else {
-    pill.className = 'state-pill awake';
-    pill.querySelector('span').textContent = '🟢';
-    txt.textContent = 'صاحي';
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const el=document.createElement('div');el.className='toast';el.textContent=msg;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),2800);
+}
+
+// منع إغلاق الـ sheet بالضغط بره
+document.getElementById('overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('overlay')) toast('⚠️ لازم تختار — نايم ولا صاحي؟');
+});
+
+// Visibility change
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&S.checkAt&&S.cdSecs>0){
+    const elapsed=Math.floor((Date.now()-S.checkAt.getTime())/1000);
+    S.cdSecs=(cfg.waitMins*60)-elapsed;
+    if(S.cdSecs<=0) autoSleep();
   }
-}
-
-// ═══════════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════════
-function toast(msg) {
-  document.querySelectorAll('.toast').forEach(t => t.remove());
-  const el = document.createElement('div');
-  el.className = 'toast';
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 2800);
-}
-
-// ═══════════════════════════════════════════
-//  SERVICE WORKER (background keep-alive)
-// ═══════════════════════════════════════════
-function registerSW() {
-  if (!('serviceWorker' in navigator)) return;
-
-  const swCode = `
-const CACHE = 'nt-v1';
-
-self.addEventListener('install', e => {
-  self.skipWaiting();
+  if(!document.hidden) updateNotifStatusUI();
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(clients.claim());
-});
-
-// Background sync: keep scheduler alive via periodic messages
-self.addEventListener('message', e => {
-  if (e.data && e.data.type === 'PING') {
-    e.source.postMessage({ type: 'PONG' });
-  }
-});
-
-// Push notification support (if backend sends push later)
-self.addEventListener('push', e => {
-  const data = e.data ? e.data.json() : { title: '🌙 مراقب النوم', body: 'إنت بتعمل إيه دلوقتي؟' };
-  e.waitUntil(
-    self.registration.showNotification(data.title, {
-      body:               data.body,
-      requireInteraction: true,
-      tag:                'sleep-check',
-      renotify:           true,
-      actions: [
-        { action: 'sleep',    title: '😴 نايم'  },
-        { action: 'activity', title: '✍️ صاحي'  }
-      ]
-    })
-  );
-});
-
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  e.waitUntil(clients.matchAll({type:'window'}).then(list => {
-    if (list.length) { list[0].focus(); list[0].postMessage({type:'OPEN_SHEET'}); }
-    else clients.openWindow('/');
-  }));
-});
-`;
-
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  const url  = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(url, { scope: '/' })
-    .then(reg => {
-      console.log('SW registered');
-      // Listen for messages from SW
-      navigator.serviceWorker.addEventListener('message', e => {
-        if (e.data && e.data.type === 'OPEN_SHEET') openSheet();
-      });
-    })
-    .catch(e => console.warn('SW:', e));
-}
-
-// Prevent closing sheet by tapping outside (must respond)
-document.getElementById('overlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('overlay')) {
-    toast('⚠️ لازم تختار — نايم ولا صاحي؟');
-  }
-});
-
-// ═══════════════════════════════════════════
-//  VISIBILITY: re-check when app comes to foreground
-// ═══════════════════════════════════════════
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && state.running) {
-    // If countdown was running, check if expired
-    if (state.checkStarted && state.countdownSecs > 0) {
-      const elapsed = Math.floor((Date.now() - state.checkStarted.getTime()) / 1000);
-      state.countdownSecs = (cfg.waitMins * 60) - elapsed;
-      if (state.countdownSecs <= 0) autoSleep();
-    }
-  }
-});
-
-// ── BOOT ──
 boot();
 </script>
 </body>
